@@ -15,8 +15,8 @@ They are just a possible answer.
 1. **Basic C**
 2. **Other Basic C**
 3. `sha1`
-4. `hmac` and `sha2`
-5. *We will see*
+4. `hmac` and `sha2` (thanks to `Darka` for the Code)
+5. `PBKDF2` (thanks to `Darka` for the Code)
 
 ---
 
