@@ -16,29 +16,22 @@ int main(){
 
 	int count = 0;
 
-	time_t endwait;
-    time_t start = time(NULL);
-    time_t seconds = 10;
-    endwait = start + seconds;
 
 
 
     FILE *canale;
 
-while(start < endwait){
+while(count < 10){
 
 
-	start = time(NULL);
-
-	if (access("semaforo.txt", F_OK) != -1){  //verifico se il file semaforo.txt è presente	
-	}
-	else{ // se non è presente faccio i vari comandi
-		fopen("semaforo.txt","w");
+	if (access("verde_server.txt", F_OK) != -1){  //verifico se il file semaforo.txt è presente	
 		canale = fopen("canale.txt","a");
 		fprintf(canale, "server %d \n",count++);
+		printf("server %d \n",count);
 		fclose(canale);
-		remove("semaforo.txt");
-		sleep(1);
+		remove("verde_server.txt");
+		fopen("verde_client.txt","w");
+		sleep(3);
 	}
 }
 
