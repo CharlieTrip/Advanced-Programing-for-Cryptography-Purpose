@@ -187,10 +187,13 @@ int DH_generate_keys(DH * dh){
 	return DH_generate_key(dh);
 }
 
-int DH_public_encrypt(unsigned char * data,int data_len,unsigned char * key, unsigned char *encrypted){ return 0 ;}
-int DH_private_decrypt(unsigned char * enc_data,int data_len,unsigned char * key, unsigned char *decrypted){ return 0 ;}
-int DH_private_encrypt(unsigned char * data,int data_len,unsigned char * key, unsigned char *encrypted){ return 0 ;}
-int DH_public_decrypt(unsigned char * enc_data,int data_len,unsigned char * key, unsigned char *decrypted){ return 0 ;}
+int DH_secret(DH * dh , BIGNUM * pub_key , BIGNUM * secret){
+	unsigned char key[DH_size(dh)];
+	if (DH_compute_key(key, pub_key, dh) == -1) return -1;
+	BIGNUM *p = BN_bin2bn(key, sizeof(key), NULL);
+	BN_copy(secret,p);
+	return 0 ;
+}
 
 
 

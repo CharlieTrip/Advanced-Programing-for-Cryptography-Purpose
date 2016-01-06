@@ -133,16 +133,32 @@ int main(int argc, char **argv){
 		"-----END DH PARAMETERS-----\n";
 
 	DH * dh;
-
 	dh = DH_create(parameters);
 	DH_generate_keys(dh);
 
+	DH * dh2;
+	dh2 = DH_create(parameters);
+	DH_generate_keys(dh2);
+
+	BIGNUM *p = BN_new();
+	BIGNUM *p2 = BN_new();
+
+
+	DH_secret(dh,dh2->pub_key,p);
+	DH_secret(dh2,dh->pub_key,p2);
+
+	BN_print_fp(stdout, p);
+	
+	
 	
 	FILE * fp;
 	fp = fopen("test.txt","w");
-	BN_print_fp(fp, dh->priv_key);
+	BN_print_fp(fp, p);
+	fprintf(fp,"\n\n");
+	BN_print_fp(fp, p2);
 
-
+	BN_free(p);
+	BN_free(p2);
 
 
 
