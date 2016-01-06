@@ -92,4 +92,5 @@ int get_nth_line( FILE *f, int line_no, char *content_of_line)
     	}
     }
     return 0;
+    free(line);
 }
