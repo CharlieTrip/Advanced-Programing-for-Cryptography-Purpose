@@ -14,7 +14,7 @@ So
 	+ Client has a *client.txt* locally
 	+ Server has a *server.txt* locally
 	+ Cli-Ser have a *channel.txt* for communication
-	+ Cli-Ser have a *semaphore.txt* for concurrency
+	+ Cli-Ser have two semaphores *ok_client.txt* and *ok_server.txt* for concurrency
 
 + Both server and client has access to a CA certificate *ca.crt*.  
 Only server has a *certificate.crt* of his public key, signed by the CA.

@@ -19,6 +19,4 @@ bool check_semaphore_SERVER();
 
 void change_semaphore_SERVER();
 
-void close_all();
-
 #endif
