@@ -26,7 +26,7 @@ int main()
   static char res_hexstring[32];
 
   // result = HMAC(EVP_sha256(), key, 4, data, 28, NULL, NULL);
-  result = HMAC(EVP_md5(), key, 32, data, 28, NULL, NULL);
+  result = HMAC(EVP_md5(), key, 64, data, 84, NULL, NULL);
   for (i = 0; i < result_len; i++) {
     sprintf(&(res_hexstring[i * 2]), "%02x", result[i]);
   }
