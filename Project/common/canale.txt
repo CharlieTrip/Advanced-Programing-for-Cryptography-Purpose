@@ -1,0 +1,8 @@
+0 +canale+ : 0aaaaaaaaaa
+1 +canale+ : 1 aaaaaaaaaa
+2 +canale+ : 2 aaaaaaaaaa
+3 +canale+ : 3 aaaaaaaaaa
+4 +canale+ : 4 aaaaaaaaaa
+5 +canale+ : 5 aaaaaaaaaa
+6 +canale+ : 6 aaaaaaaaaa
+7 +canale+ : 7 aaaaaaaaaa

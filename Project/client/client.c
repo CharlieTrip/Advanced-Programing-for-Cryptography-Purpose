@@ -2,24 +2,23 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <stdbool.h>
-#include "semaphore.c"
+#include "../common/semaphore.c"
+#include "../common/file.c"
 
 
 int main(){
 
-	FILE *canale;
-
+	FILE *channel;
+	
 	while(/*condizione da inserire*/){
 		if (check_semaphore_CLIENT() == true){ // check if the file is exists
-			canale = fopen("canale.txt","a");
+			channel = fopen("../common/channel.txt","r");
 				
-			if (canale != NULL){
+			if (channel != NULL){
 					//read data
 					//computation
 					//write data
-				}
-
-			fclose(canale);
+			fclose(channel);
 			change_semaphore_CLIENT();
 		}
 	}
