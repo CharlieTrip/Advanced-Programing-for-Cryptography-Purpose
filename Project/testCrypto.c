@@ -125,6 +125,25 @@ int main(int argc, char **argv){
 	// 
 	// Test DH
 	// 
+	char plainText[2048/8] = "Hello this is Ravi"; //key length : 2048
+	char parameters[]="-----BEGIN DH PARAMETERS-----\n"\
+		"MIGHAoGBAOeiCSE+AhO9/rzOfdzefaRX63pfrOgabColA8gaeN/fSmYuRdktGvo7\n"\
+		"WZUNJNyzHMR0K1q1Se1bRcjREzGGO6QOhOnBzoldj93f+CHrAZn/rKDlHpiXxz2d\n"\
+		"DqS8syFx+suaYIhWo05zx0ykkaBtt9sUuWbZs4xl0u3GQXQ92fFDAgEC\n"\
+		"-----END DH PARAMETERS-----\n";
+
+	DH * dh;
+
+	dh = DH_create(parameters);
+	DH_generate_keys(dh);
+
+	
+	FILE * fp;
+	fp = fopen("test.txt","w");
+	BN_print_fp(fp, dh->priv_key);
+
+
+
 
 
 	return 0;

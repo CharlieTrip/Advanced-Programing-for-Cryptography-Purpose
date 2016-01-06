@@ -14,6 +14,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <openssl/engine.h>
+
 
 // Certificates
 
@@ -158,7 +160,33 @@ int TLS_RSA_public_decrypt(unsigned char * enc_data,int data_len,unsigned char *
 
 
 // DH [WIP]
-DH * createDH(unsigned char * key,int public) { return 0 ;}
+//  http://linux.die.net/man/3/ssl_ctx_set_tmp_dh
+// Pass the PEM format of DH
+
+DH * DH_create(unsigned char * parameter){
+	DH *dh= NULL;
+    BIO *keybio ;
+    keybio = BIO_new_mem_buf(parameter, -1);
+    
+    if (keybio == NULL) {
+        printf( "Failed to create parameter BIO");
+        return 0;
+    }
+
+    
+    dh = PEM_read_bio_DHparams(keybio, &dh , NULL , NULL);
+    
+    if (dh == NULL) {
+        printf( "Failed to create DH");
+    }
+   
+	return(dh);
+}
+
+int DH_generate_keys(DH * dh){
+	return DH_generate_key(dh);
+}
+
 int DH_public_encrypt(unsigned char * data,int data_len,unsigned char * key, unsigned char *encrypted){ return 0 ;}
 int DH_private_decrypt(unsigned char * enc_data,int data_len,unsigned char * key, unsigned char *decrypted){ return 0 ;}
 int DH_private_encrypt(unsigned char * data,int data_len,unsigned char * key, unsigned char *encrypted){ return 0 ;}

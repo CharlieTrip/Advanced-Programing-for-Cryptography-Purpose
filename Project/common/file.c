@@ -13,7 +13,7 @@ it returns the content of a line, example: if a line is
 #include <stdlib.h>
 #include <string.h>
 
-#define BUF_SIZE ( 1024 )
+#define BUF_SIZE ( 2048 )
  
 
 int get_nth_line( FILE *f, int line_no, char *content_of_line)

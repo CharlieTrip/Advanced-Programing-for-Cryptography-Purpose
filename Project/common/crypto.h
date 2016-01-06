@@ -44,7 +44,8 @@ int TLS_RSA_public_decrypt(unsigned char * enc_data,int data_len,unsigned char *
 // [WIP on prototypes]
 
 
-DH * createDH(unsigned char * key,int public);
+DH * DH_create(unsigned char * parameter);
+int DH_generate_keys(DH * dh);
 int DH_public_encrypt(unsigned char * data,int data_len,unsigned char * key, unsigned char *encrypted);
 int DH_private_decrypt(unsigned char * enc_data,int data_len,unsigned char * key, unsigned char *decrypted);
 int DH_private_encrypt(unsigned char * data,int data_len,unsigned char * key, unsigned char *encrypted);
