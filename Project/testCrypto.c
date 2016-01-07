@@ -36,6 +36,7 @@ int main(int argc, char **argv){
 	// Test Certificati
 	// 
 	// printf("%d\n", verifyCertificate("./server/cert-file.pem"));
+	printf("%d\n", getPubKey("./server/cert-file.pem"));
 
 
 
@@ -125,40 +126,32 @@ int main(int argc, char **argv){
 	// 
 	// Test DH
 	// 
-	char plainText[2048/8] = "Hello this is Ravi"; //key length : 2048
-	char parameters[]="-----BEGIN DH PARAMETERS-----\n"\
-		"MIGHAoGBAOeiCSE+AhO9/rzOfdzefaRX63pfrOgabColA8gaeN/fSmYuRdktGvo7\n"\
-		"WZUNJNyzHMR0K1q1Se1bRcjREzGGO6QOhOnBzoldj93f+CHrAZn/rKDlHpiXxz2d\n"\
-		"DqS8syFx+suaYIhWo05zx0ykkaBtt9sUuWbZs4xl0u3GQXQ92fFDAgEC\n"\
-		"-----END DH PARAMETERS-----\n";
+	// char plainText[2048/8] = "Hello this is Ravi"; //key length : 2048
+	// char parameters[]="-----BEGIN DH PARAMETERS-----\n"\
+	// 	"MIGHAoGBAOeiCSE+AhO9/rzOfdzefaRX63pfrOgabColA8gaeN/fSmYuRdktGvo7\n"\
+	// 	"WZUNJNyzHMR0K1q1Se1bRcjREzGGO6QOhOnBzoldj93f+CHrAZn/rKDlHpiXxz2d\n"\
+	// 	"DqS8syFx+suaYIhWo05zx0ykkaBtt9sUuWbZs4xl0u3GQXQ92fFDAgEC\n"\
+	// 	"-----END DH PARAMETERS-----\n";
+	// DH * dh;
+	// dh = DH_create(parameters);
+	// DH_generate_keys(dh);
+	// DH * dh2;
+	// dh2 = DH_create(parameters);
+	// DH_generate_keys(dh2);
+	// BIGNUM *p = BN_new();
+	// BIGNUM *p2 = BN_new();
+	// DH_secret(dh,dh2->pub_key,p);
+	// DH_secret(dh2,dh->pub_key,p2);
+	// BN_print_fp(stdout, p);
+	// FILE * fp;
+	// fp = fopen("test.txt","w");
+	// BN_print_fp(fp, p);
+	// fprintf(fp,"\n\n");
+	// BN_print_fp(fp, p2);
+	// BN_free(p);
+	// BN_free(p2);
 
-	DH * dh;
-	dh = DH_create(parameters);
-	DH_generate_keys(dh);
 
-	DH * dh2;
-	dh2 = DH_create(parameters);
-	DH_generate_keys(dh2);
-
-	BIGNUM *p = BN_new();
-	BIGNUM *p2 = BN_new();
-
-
-	DH_secret(dh,dh2->pub_key,p);
-	DH_secret(dh2,dh->pub_key,p2);
-
-	BN_print_fp(stdout, p);
-	
-	
-	
-	FILE * fp;
-	fp = fopen("test.txt","w");
-	BN_print_fp(fp, p);
-	fprintf(fp,"\n\n");
-	BN_print_fp(fp, p2);
-
-	BN_free(p);
-	BN_free(p2);
 
 
 

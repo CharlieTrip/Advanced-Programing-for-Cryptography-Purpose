@@ -13,6 +13,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#
 
 #include <openssl/engine.h>
 
@@ -94,6 +95,93 @@ int verifyCertificate(unsigned char * cert_filestr){
 
 	return ret;
 }
+
+int getPubKey(unsigned char * cert_filestr){
+
+	BIO              *certbio = NULL;
+	BIO               *outbio = NULL;
+	X509          *error_cert = NULL;
+	X509                *cert = NULL;
+	X509_NAME    *certsubject = NULL;
+	X509_STORE         *store = NULL;
+	X509_STORE_CTX  *vrfy_ctx = NULL;
+	EVP_PKEY *key;
+	int ret;
+
+	/* ---------------------------------------------------------- *
+	* These function calls initialize openssl for correct work.  *
+	* ---------------------------------------------------------- */
+	OpenSSL_add_all_algorithms();
+	ERR_load_BIO_strings();
+	ERR_load_crypto_strings();
+
+	/* ---------------------------------------------------------- *
+	* Create the Input/Output BIO's.                             *
+	* ---------------------------------------------------------- */
+	key = EVP_PKEY_new();
+	certbio = BIO_new(BIO_s_file());
+	outbio  = BIO_new_fp(stdout, BIO_NOCLOSE);
+
+	/* ---------------------------------------------------------- *
+	* Initialize the global certificate validation store object. *
+	* ---------------------------------------------------------- */
+	if (!(store=X509_STORE_new()))
+	BIO_printf(outbio, "Error creating X509_STORE_CTX object\n");
+
+	/* ---------------------------------------------------------- *
+	* Create the context structure for the validation operation. *
+	* ---------------------------------------------------------- */
+	vrfy_ctx = X509_STORE_CTX_new();
+
+	/* ---------------------------------------------------------- *
+	* Load the certificate and cacert chain from file (PEM).     *
+	* ---------------------------------------------------------- */
+	ret = BIO_read_filename(certbio, cert_filestr);
+	if (! (cert = PEM_read_bio_X509(certbio, NULL, 0, NULL))) {
+	BIO_printf(outbio, "Error loading cert into memory\n");
+	exit(-1);
+	}
+
+	/* ---------------------------------------------------------- *
+	* Initialize the ctx structure for a verification operation: *
+	* Set the trusted cert store, the unvalidated cert, and any  *
+	* potential certs that could be needed (here we set it NULL) *
+	* ---------------------------------------------------------- */
+	X509_STORE_CTX_init(vrfy_ctx, store, cert, NULL);
+
+	
+
+
+	key = X509_get_pubkey(cert->cert_info);
+
+	RSA * rsa;
+ 	
+ 	rsa = EVP_PKEY_get0_RSA(key);
+
+ 	printf("loj\n");
+
+
+ 	RSA_print(outbio, rsa, 1);
+
+
+	// Linux ?
+	// ret = EVP_PKEY_print_public(outbio, &key, 0 , NULL );
+
+
+	/* ---------------------------------------------------------- *
+	* Free up all structures                                     *
+	* ---------------------------------------------------------- */
+	X509_STORE_CTX_free(vrfy_ctx);
+	X509_STORE_free(store);
+	X509_free(cert);
+	BIO_free_all(certbio);
+	BIO_free_all(outbio);
+	EVP_PKEY_free(key);
+
+	return ret;
+}
+
+
 
 
 

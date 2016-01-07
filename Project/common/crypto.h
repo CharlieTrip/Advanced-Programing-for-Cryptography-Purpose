@@ -27,7 +27,7 @@
 // Certificate 
 
 int verifyCertificate(unsigned char * certificate);
-
+int getPubKey(unsigned char * cert_filestr);
 
 // 
 // RSA functions
