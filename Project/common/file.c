@@ -2,23 +2,28 @@
  /* following code assumes all file operations succeed. In practice,
  * return codes from open, close, fstat, mmap, munmap all need to be
  * checked for error. It returns 0 if the line is read,  -1 in case
- of error.
-
-it returns the content of a line, example: if a line is
-'05 +server+: testprova' it returns just 'testprova'
+ * of error.
+ * 
+ *  THE FOLLOWING FUNCTION HAS TO BE MODIFIED AND CAN BE USED BEFORE THE HMAC
+ * save in 'line' the nth line of the file
+ * it returns the content of a line, example: if a line is
+ * '05 +server+: testprova' it returns just 'testprova'
 */
+
  
 #include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdarg.h>
+#include <time.h>
 
 #define BUF_SIZE ( 2048 )
  
 
 int get_nth_line( FILE *f, int line_no, char *content_of_line)
 {
-    char   buf[ BUF_SIZE ];
+    char buf[ BUF_SIZE ];
     char *line = malloc( BUF_SIZE );
     size_t curr_alloc = BUF_SIZE, curr_ofs = 0;
     int    in_line    = line_no == 1;
@@ -94,3 +99,116 @@ int get_nth_line( FILE *f, int line_no, char *content_of_line)
     return 0;
     free(line);
 }
+
+
+
+int read_channel (FILE *channel, char *content){
+
+/* 
+* Read the content of the channel
+*/
+
+    size_t bytes_read;
+    char   buf[ BUF_SIZE ];
+    size_t curr_alloc = BUF_SIZE, curr_ofs = 0;
+
+    while ( ( bytes_read = fread( buf, 1, BUF_SIZE, channel ) )  > 0 )
+    {
+        int i;
+ 
+        for ( i = 0 ; i < bytes_read ; i++ )
+        {
+                if ( curr_ofs >= curr_alloc )
+                {
+                    curr_alloc <<= 1;
+                    content = realloc( content, curr_alloc );
+ 
+                    if ( !content )    /* out of memory? */
+                        return -1;
+                }
+                content[ curr_ofs++ ] = buf[i];
+            }
+ 
+            if ( buf[i] == '\0' ){
+                break;
+        }
+    }
+    return 0;
+}
+
+int send_message (FILE* channel, int number_of_strings,...){
+
+/* Writes the concatenation of the single string (they can be multiple as the user wants)
+* into the file channel (the number of them must be expressed in number_of_strings). Also
+* the source_sender must be expressed as this function can be used both for client and server.
+* Each string is separated by a tab.
+*/
+
+
+    if (number_of_strings<0){ //number of string cannot be negative
+        return -1;
+    }
+
+    va_list valist;
+    va_start(valist,number_of_strings); //initialization of the va_list
+
+    char * to_be_send = (char *) calloc (BUF_SIZE, sizeof(char));
+
+    for(int i = 0; i<number_of_strings; i++){
+        strcat(to_be_send,va_arg(valist, char*));
+        strcat(to_be_send,"\t");
+    }
+    strcat(to_be_send,"\0");
+
+    va_end(valist);
+
+    fputs(to_be_send, channel);
+    free(to_be_send);
+    return 0;
+
+}
+
+
+ 
+
+
+
+unsigned char *gen_rdm_bytestream (size_t num_bytes){
+
+    unsigned char *stream = malloc (num_bytes);
+    size_t i;
+    
+    for (i = 0; i < num_bytes; i++){
+        stream[i] = rand ();
+    }
+
+    return stream;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

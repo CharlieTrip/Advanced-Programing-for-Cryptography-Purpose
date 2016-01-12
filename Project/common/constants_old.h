@@ -18,31 +18,31 @@
 // just the last one has the hmac control using the shared secret as key.
 
 
-const char TLS_DH_RSA_SHA1[3] = "11\0";
-const char TLS_DH_RSA_SHA2[3] = "12\0";
-const char TLS_RSA_RSA_SHA1[3] = "21\0";
-const char TLS_RSA_RSA_SHA2[3] = "22\0";
+#define TLS_DH_RSA_SHA1 11
+#define TLS_DH_RSA_SHA2 12
+#define TLS_RSA_RSA_SHA1 21
+#define TLS_RSA_RSA_SHA2 22
 
 
 // 
 // The "content type" that can be send in our implementation
 
-const char TLS_CHANGECIPHERSPEC[3] = "20\0";
-const char TLS_ALERT[3] = "21\0";
-const char TLS_HANDSHAKE[3] = "22\0";
+#define TLS_CHANGECIPHERSPEC 20
+#define TLS_ALERT 21
+#define TLS_HANDSHAKE 22
 
 
 // 
 // The Message Type (for the Handshake)
 
-const char TLS_HELLOREQUEST[2] = "0\0";
-const char TLS_CLIENTHELLO[2] = "1\0";
-const char TLS_SERVERHELLO[2] = "2\0";
-const char TLS_CERTIFICATE[3] = "11\0";
-const char TLS_SERVERKEYEXCHANGE[3] = "12\0";
-const char TLS_SERVERHELLODONE[3] = "14\0";
-const char TLS_CLIENTKEYEXCHANGE[3] = "16\0";
-const char TLS_FINISHED[3] = "20\0";
+#define TLS_HELLOREQUEST 0
+#define TLS_CLIENTHELLO 1
+#define TLS_SERVERHELLO 2
+#define TLS_CERTIFICATE 11
+#define TLS_SERVERKEYEXCHANGE 12
+#define TLS_SERVERHELLODONE 14
+#define TLS_CLIENTKEYEXCHANGE 16
+#define TLS_FINISHED 20
 
 
 // So we will have our messages coded in this way:

@@ -26,3 +26,21 @@ Only server has a *certificate.crt* of his public key, signed by the CA.
 	+ **Server** : will contain the servers file
 	+ **Client** : will contain the client file 
 	+ **Common** : will contain the common file to use
+
+
+---
+
++ REMEMBER (ALE) fix the max length of the string
+
++ REMEMBER concordare se scrivere anche un numero per ogni comunicazione oppure no
+
+
+-> il problema principale di lettura è scrittura è capire come aprire il file, cioè se lo apro in modalità lettura "r", anche se uso "r+", da problemi se poi ci voglio scrivere sopra e viceversa. E' probabile che in un solo stato il channel vada aperto due volte prima per leggerlo e poi per scriverci su
+
+
+
+
+
+
+
+
