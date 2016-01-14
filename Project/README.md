@@ -37,6 +37,8 @@ Only server has a *certificate.crt* of his public key, signed by the CA.
 
 -> il problema principale di lettura è scrittura è capire come aprire il file, cioè se lo apro in modalità lettura "r", anche se uso "r+", da problemi se poi ci voglio scrivere sopra e viceversa. E' probabile che in un solo stato il channel vada aperto due volte prima per leggerlo e poi per scriverci su
 
+-> remember ALE: risolvi o vedi il problema dei random come stringhe (vedi info nella funzione che li genera)
+
 
 
 

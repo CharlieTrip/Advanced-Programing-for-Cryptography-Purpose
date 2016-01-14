@@ -8,8 +8,9 @@
 
 int main(){
 
-	FILE *channel;
 	FILE *log_client;
+	char ciphersuite_to_use[3];
+	char * random_from_server = calloc(32, sizeof(char));
 
 	log_client = fopen("./client/log_client.txt","w");
 
@@ -24,35 +25,28 @@ int main(){
 	
 	while(true){
 		if (check_semaphore_CLIENT() == true){ // check if the file is exists
-			channel = fopen("./common/channel.txt","w+");	
-			if (channel != NULL){
-				if(state == 0){
-					client_states_1(log_client, channel);
-					state++;
-					fclose(channel);
-					change_semaphore_CLIENT();
-					break;
-				}
-				if(state == 1){
-					//
-				}
-				if(state == 2){
-					//
-				}
-				if(state == 3){
-					//
-				}
-				if(state == 4){
-					//
-				}
 
-		/*	fclose(channel);
-			change_semaphore_CLIENT();
-			*/
+			if(state == 0){
+				client_states_0(log_client);
 			}
+			else if(state == 1){
+				client_states_1(log_client, ciphersuite_to_use, random_from_server);
+				break;
+			}
+			else if(state == 2){
+				
+			}
+			else if(state == 3){
+				//
+			}
+			else if(state == 4){
+				//
+			}
+			state++;
+			change_semaphore_CLIENT();
 		}
 	}
-
+	close_all();
 	fclose(log_client);
 
 	return 0;

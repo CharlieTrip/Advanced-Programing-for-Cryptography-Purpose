@@ -18,18 +18,18 @@
 // just the last one has the hmac control using the shared secret as key.
 
 
-const char TLS_DH_RSA_SHA1[3] = "11\0";
-const char TLS_DH_RSA_SHA2[3] = "12\0";
-const char TLS_RSA_RSA_SHA1[3] = "21\0";
-const char TLS_RSA_RSA_SHA2[3] = "22\0";
+const char TLS_RSA_RSA_SHA1[3] = "11\0";
+const char TLS_RSA_RSA_SHA2[3] = "12\0";
+const char TLS_DH_RSA_SHA1[3] = "21\0";
+const char TLS_DH_RSA_SHA2[3] = "22\0";
 
 
 // 
 // The "content type" that can be send in our implementation
 
-const char TLS_CHANGECIPHERSPEC[3] = "20\0";
-const char TLS_ALERT[3] = "21\0";
-const char TLS_HANDSHAKE[3] = "22\0";
+const char TLS_CHANGECIPHERSPEC[3] = "30\0";
+const char TLS_ALERT[3] = "31\0";
+const char TLS_HANDSHAKE[3] = "32\0";
 
 
 // 
@@ -50,3 +50,8 @@ const char TLS_FINISHED[3] = "20\0";
 //	 Content Type - Message Type \n
 //	 Message \n
 // 
+
+
+/* NOTE: the memory allocated is one plus the length of the string
+ * since we want also the \0 character 
+ */

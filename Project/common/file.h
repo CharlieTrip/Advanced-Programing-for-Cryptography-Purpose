@@ -29,4 +29,17 @@ int send_message (FILE* channel, const char * source_sender, int number_of_strin
 
 int read_channel (FILE *channel, char *content);
 
-unsigned char *gen_rdm_bytestream (size_t num_bytes)
+char * gen_rdm_bytestream (size_t num_bytes);
+
+int get_byte_length(char * message);
+
+int get_n_of_blocks(char * message);
+
+int get_nth_length_block(char * message, int n_block);
+
+int get_nth_block(char * message, int n_block);
+
+void get_random_block(char * message, char * random_block);
+
+
+

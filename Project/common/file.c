@@ -158,7 +158,7 @@ int send_message (FILE* channel, int number_of_strings,...){
         strcat(to_be_send,va_arg(valist, char*));
         strcat(to_be_send,"\t");
     }
-    strcat(to_be_send,"\0");
+    strcat(to_be_send,"\n\0");
 
     va_end(valist);
 
@@ -173,14 +173,19 @@ int send_message (FILE* channel, int number_of_strings,...){
 
 
 
-unsigned char *gen_rdm_bytestream (size_t num_bytes){
+char * gen_rdm_bytestream (size_t num_bytes){
 
-    unsigned char *stream = malloc (num_bytes);
-    size_t i;
+    char *stream = calloc (num_bytes,sizeof(char));
+    time_t t;
+    srand((unsigned) time(&t));
     
-    for (i = 0; i < num_bytes; i++){
-        stream[i] = rand ();
+    for (int i = 0; i < num_bytes; i++){
+        stream[i] = 50+(rand () % 50);
     }
+/* c'è un problema da risolcere qui: qundo creo un random char
+potrebbe essere anche un '\t' o un '\n' e danno problemi in fase
+di lettura. Per ora ho fatto questa modifica con i 50 ma andrebbe
+rivista */
 
     return stream;
 }
@@ -189,6 +194,94 @@ unsigned char *gen_rdm_bytestream (size_t num_bytes){
 
 
 
+int get_byte_length(char * message){
+/* return length of the message in byte (number of char) */
+    int length = 0;
+    while(message[length] != '\0'){
+        length++;
+    }
+    return length;
+}
+
+
+
+
+int get_n_of_blocks(char * message){
+/* return number of blocks separated by tab */
+    int n_blocks = 0;
+    int length;
+    length = get_byte_length(message);
+
+    for (int i = 0; i < length; i++){
+        if (message[i] == '\t'){
+            n_blocks++;
+        }
+    }
+    return n_blocks;
+}
+
+
+
+
+int get_nth_length_block(char * message, int n_block){
+/* return the lenhth in byte (char) of the n-th block */
+    int length;
+    length = get_byte_length(message);
+    int length_block = 0;
+    int count_tab = 1;
+    for (int i = 0; i < length; ++i){
+        if (message[i] == '\t'){
+            count_tab++;
+        }
+        if (count_tab == n_block && message[i] != '\t'){
+                length_block++;
+        }
+    }
+    return length_block;
+}
+
+
+
+int get_nth_block(char * message, int n_block){
+/* return the content of the n-th block
+       to not use for extract the random block */
+    int length;
+    length = get_byte_length(message);
+    int length_block = 0;
+    int count_tab = 1;
+    int content;
+
+    for (int i = 0; i < length; ++i){
+        if (message[i] == '\t'){
+            count_tab++;
+        }
+        if (count_tab == n_block && message[i] != '\t'){
+                content = atoi(message+i);
+                break;
+        }
+    }
+    return content;
+}
+
+
+
+void get_random_block(char * message, char * random_block){
+/* use this code to get the random block from the message */
+
+    int length;
+    length = get_byte_length(message);
+    int count_tab = 1;
+
+    for (int i = 0; i < length; ++i){
+        if (message[i] == '\t'){
+            count_tab++;
+        }
+        if (count_tab == 3 && message[i] != '\t'){
+                 strncpy (random_block, message+i,  32);
+                break;
+        }
+    }
+}
 
 
 

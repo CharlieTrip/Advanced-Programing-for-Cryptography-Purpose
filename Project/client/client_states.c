@@ -8,22 +8,45 @@
 
 const char sending[13] = "**client** :";
 const char receiving[13] = "**server** :"; 
+const char link_channel[20] = "./common/channel.txt";
 
 
 
+void client_states_0 (FILE* log_client){
 
-int client_states_1 (FILE* log_client, FILE* channel){
+	/* for the moment we suppose the client can use all 4 types of ciphersuite */
 
-	/* for the moment we suppose the client can use all 4 types of protocol */
-
-	unsigned char * random_part = calloc(32, sizeof(char));
-	random_part = gen_rdm_bytestream(32);
-
-
-	// the number 8 indicates number of blocks
-	send_message (channel, 8, "8", TLS_HANDSHAKE, TLS_CLIENTHELLO, random_part, TLS_DH_RSA_SHA1, TLS_DH_RSA_SHA2, TLS_RSA_RSA_SHA1, TLS_RSA_RSA_SHA2);
-	send_message (log_client, 9, sending, "8", TLS_HANDSHAKE, TLS_CLIENTHELLO, random_part, TLS_DH_RSA_SHA1, TLS_DH_RSA_SHA2, TLS_RSA_RSA_SHA1, TLS_RSA_RSA_SHA2);
-
-	return 0;
-
+	FILE* channel = fopen (link_channel,"w");
+	// Generate Random part
+	char * random_part = calloc (32, sizeof(char));
+	random_part = gen_rdm_bytestream (32);
+	// Send Hello Client to the Server
+	send_message (channel, 7, TLS_HANDSHAKE, TLS_CLIENTHELLO, random_part, TLS_DH_RSA_SHA1, TLS_DH_RSA_SHA2, TLS_RSA_RSA_SHA1, TLS_RSA_RSA_SHA2);
+	// Save it in log_client
+	send_message (log_client, 8, sending, TLS_HANDSHAKE, TLS_CLIENTHELLO, random_part, TLS_DH_RSA_SHA1, TLS_DH_RSA_SHA2, TLS_RSA_RSA_SHA1, TLS_RSA_RSA_SHA2);
+	fclose (channel);
 }
+
+
+void client_states_1 (FILE* log_client, char * ciphersuites_to_use, char * random_from_server){
+
+	char * received_message = calloc(BUF_SIZE,sizeof(char));
+	FILE* channel = fopen (link_channel,"r");
+	// Read data from channel
+	read_channel (channel, received_message);
+	fclose (channel);
+	// Save it in log_client
+	send_message (log_client, 2, receiving, received_message);
+	// Get the random from the client
+	get_random_block(received_message,random_from_server);
+	// Get the ciphersuite to use (choosed by the server)
+	sprintf (ciphersuites_to_use, "%d", get_nth_block(received_message,4));
+}
+
+
+
+
+
+
+
+
