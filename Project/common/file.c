@@ -17,6 +17,7 @@
 #include <string.h>
 #include <stdarg.h>
 #include <time.h>
+#include <openssl/rand.h>
 
 #define BUF_SIZE ( 2048 )
  
@@ -155,10 +156,13 @@ int send_message (FILE* channel, int number_of_strings,...){
     char * to_be_send = (char *) calloc (BUF_SIZE, sizeof(char));
 
     for(int i = 0; i<number_of_strings; i++){
-        strcat(to_be_send,va_arg(valist, char*));
-        strcat(to_be_send,"\t");
+        if(i != 0){
+            strcat(to_be_send,"\t");
+        }
+        strcat(to_be_send,va_arg(valist, char*));    
     }
-    strcat(to_be_send,"\n\0");
+
+    strcat(to_be_send,"\0");
 
     va_end(valist);
 
@@ -168,8 +172,16 @@ int send_message (FILE* channel, int number_of_strings,...){
 
 }
 
+/*
+char * gen_rdm_bytestream (size_t num_bytes){
 
+    unsigned char *stream = calloc (num_bytes,sizeof(char));
+    RAND_bytes( stream, num_bytes);
  
+
+    return (char *) stream;
+}
+*/
 
 
 
@@ -182,11 +194,12 @@ char * gen_rdm_bytestream (size_t num_bytes){
     for (int i = 0; i < num_bytes; i++){
         stream[i] = 50+(rand () % 50);
     }
-/* c'è un problema da risolcere qui: qundo creo un random char
-potrebbe essere anche un '\t' o un '\n' e danno problemi in fase
-di lettura. Per ora ho fatto questa modifica con i 50 ma andrebbe
-rivista */
 
+/* c'è un problema da risolvere qui: qundo creo un random char
+* potrebbe essere anche un '\t' o un '\n' e danno problemi in fase
+* di lettura. Per ora ho fatto questa modifica con i 50 ma andrebbe
+* rivista 
+*/
     return stream;
 }
 

@@ -28,19 +28,23 @@ int main(){
 
 			if(state == 0){
 				client_states_0(log_client);
+				printf("Client 0\n"); // to delete
 			}
 			else if(state == 1){
 				client_states_1(log_client, ciphersuite_to_use, random_from_server);
-				break;
+				printf("Client 1\n"); // to delete
 			}
 			else if(state == 2){
-				
+				client_states_2 (log_client);
+				printf("Client 2\n"); // to delete
 			}
 			else if(state == 3){
-				//
+				printf("Client 3\n"); // to delete
 			}
 			else if(state == 4){
-				//
+				printf("Client 4\n"); // to delete
+				change_semaphore_CLIENT();
+				break;
 			}
 			state++;
 			change_semaphore_CLIENT();
@@ -48,14 +52,7 @@ int main(){
 	}
 	close_all();
 	fclose(log_client);
+	remove("./common/channel.txt");
 
 	return 0;
 }
-
-
-
-
-
-
-
-

@@ -1,3 +1,4 @@
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -30,33 +31,30 @@ int main(){
 
 			if(state == 0){
 				server_states_0(log_server, ciphersuite_to_use,random_from_client);
-				change_semaphore_SERVER();
-				state++;
-				break;
+				printf("Server 0\n"); // to delete
 			}
 			else if(state == 1){
-				break;
+				server_state_1(log_server,ciphersuite_to_use);
+				printf("Server 1\n"); // to delete
 			}
 			else if(state == 2){
-				//
+				printf("Server 2\n"); // to delete
 			}
 			else if(state == 3){
-				//
+				printf("Server 3\n"); // to delete
 			}
 			else if(state == 4){
-				//
+				printf("Server 4\n"); // to delete
+				break;
 			}
 			state++;
-			//change_semaphore_SERVER();
-			
+			change_semaphore_SERVER();
 		}
 	}
 
 	//close_all();
 	fclose(log_server);
-	remove("./common/channel.txt");
+	//remove("./common/channel.txt");
 
 return 0;
 }
-
-

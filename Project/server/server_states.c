@@ -1,3 +1,4 @@
+
 #include <stdio.h>
 #include <stdlib.h>
 #include "../common/constants.h"
@@ -57,9 +58,27 @@ void server_states_0 (FILE* log_server, char * ciphersuites_to_use, char * rando
 	send_message (log_server, 5, sending, TLS_HANDSHAKE, TLS_SERVERHELLO, random_part, ciphersuites_to_use);
 	fclose(channel);
 	free(received_message);
+}
 
+void server_state_1(FILE* log_server,char * ciphersuite_to_use){
+	
+	// Allocate memory to contain the certificate
+	char * certificate = calloc(BUF_SIZE,sizeof(char));
+	// Read the certificate (yes... 'read_channel' is an abusing of name)
+	FILE* certificate_file = fopen("cert.txt","r+");
+	read_channel(certificate_file,certificate);
+	fclose(certificate_file);
+	// Send message to the channel
+	FILE* channel = fopen(link_channel,"w");
+	send_message (channel, 2, TLS_HANDSHAKE, certificate);
+	fclose(channel);
+	// Save message in log_server
+	send_message (log_server, 3, sending, TLS_HANDSHAKE, certificate);
+	free(certificate);
 
 }
+
+
 
 
 

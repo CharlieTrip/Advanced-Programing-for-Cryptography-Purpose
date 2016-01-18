@@ -44,6 +44,34 @@ void client_states_1 (FILE* log_client, char * ciphersuites_to_use, char * rando
 }
 
 
+void client_states_2 (FILE* log_client){
+	
+	char * received_message = calloc(BUF_SIZE,sizeof(char));
+	FILE* channel = fopen (link_channel,"r");
+	// Read data from channel
+	read_channel (channel, received_message);
+	fclose (channel);
+	// Save it in log_client
+	send_message (log_client, 2, receiving, received_message);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

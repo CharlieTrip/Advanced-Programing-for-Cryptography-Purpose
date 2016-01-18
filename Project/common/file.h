@@ -3,10 +3,15 @@
 // 
 // All the prototype for reading and managing the files
 
+#include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <unistd.h>
+#include <stdarg.h>
+#include <time.h>
+#include <openssl/rand.h>
+
+#define BUF_SIZE ( 2048 )
 
 
 //FILE *fopen(const char *filename, const char *mode); // "r" for read mode, "a" for write/appending mode 
