@@ -52,7 +52,6 @@ int main(){
 	}
 	close_all();
 	fclose(log_client);
-	remove("./common/channel.txt");
 
 	return 0;
 }

@@ -52,9 +52,8 @@ int main(){
 		}
 	}
 
-	//close_all();
+	close_all();
 	fclose(log_server);
-	//remove("./common/channel.txt");
 
 return 0;
 }

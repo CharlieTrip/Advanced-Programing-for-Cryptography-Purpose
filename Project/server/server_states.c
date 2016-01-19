@@ -13,6 +13,7 @@ const char link_channel[20] = "./common/channel.txt";
 
 
 
+
 void chose_best_ciphersuite(char * message, char * best_chipersuite){
 
 	int n_ciphersuite = get_n_of_blocks(message)-3;

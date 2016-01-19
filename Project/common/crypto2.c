@@ -78,11 +78,9 @@ char * get_certificate() {
  * return it as a string                             */
 
   BIO *certbio = NULL;
-  BIO *outbio = NULL;
   FILE *cert_file;
   X509 *cert = NULL;
   const char cert_filestr[] = "./server/cert-file.pem";
-  outbio  = BIO_new_fp(stdout, BIO_NOCLOSE);
   certbio = BIO_new(BIO_s_file());
   int ret;
   
@@ -90,13 +88,95 @@ char * get_certificate() {
 
   ret = BIO_read_filename(certbio, cert_filestr);
   if (! (cert = PEM_read_bio_X509(certbio, NULL, 0, NULL))) {
-    BIO_printf(outbio, "Error loading cert into memory\n");
-    BIO_free(outbio);
+    printf("Error loading cert into memory\n");
   }
-  BIO_free(outbio);  
   return X509_to_string(cert);
-
-
 }
+
+
+
+
+
+
+
+
+int get_pubkey() {
+
+  const char cert_filestr[] = "./client/cert-file.pem";
+  const char pubkey_filestr[] = "./client/public_key.pem";
+             EVP_PKEY *pkey = NULL;
+  BIO              *certbio = NULL;
+  X509                *cert = NULL;
+  int ret;
+
+  /* ---------------------------------------------------------- *
+   * These function calls initialize openssl for correct work.  *
+   * ---------------------------------------------------------- */
+  OpenSSL_add_all_algorithms();
+  ERR_load_BIO_strings();
+  ERR_load_crypto_strings();
+
+  /* ---------------------------------------------------------- *
+   * Create the Input BIO's.                             *
+   * ---------------------------------------------------------- */
+  certbio = BIO_new(BIO_s_file());
+
+  /* ---------------------------------------------------------- *
+   * Load the certificate from file (PEM).                      *
+   * ---------------------------------------------------------- */
+  ret = BIO_read_filename(certbio, cert_filestr);
+  if (! (cert = PEM_read_bio_X509(certbio, NULL, 0, NULL))) {
+    printf("Error loading cert into memory\n");
+    return -1;
+  }
+
+  /* ---------------------------------------------------------- *
+   * Extract the certificate's public key data.                 *
+   * ---------------------------------------------------------- */
+  if ((pkey = X509_get_pubkey(cert)) == NULL)
+    printf("Error getting public key from certificate\n");
+
+  FILE *key_file = fopen(pubkey_filestr, "w");
+  if(!PEM_write_PUBKEY(key_file, pkey)){
+    printf("Error writing public key data in PEM format\n");
+  }
+  fclose(key_file);
+
+  EVP_PKEY_free(pkey);
+  X509_free(cert);
+  BIO_free_all(certbio);
+  return 0;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 

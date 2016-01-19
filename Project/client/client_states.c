@@ -67,6 +67,7 @@ void client_states_2 (FILE* log_client){
  	free(received_message);
  	//free(certificate); NON GLI PIACE IL FREE
  	fclose(cert_file);
+	get_pubkey();
 }
 
 
