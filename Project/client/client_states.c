@@ -24,6 +24,7 @@ void client_states_0 (FILE* log_client){
 	send_message (channel, 7, TLS_HANDSHAKE, TLS_CLIENTHELLO, random_part, TLS_DH_RSA_SHA1, TLS_DH_RSA_SHA2, TLS_RSA_RSA_SHA1, TLS_RSA_RSA_SHA2);
 	// Save it in log_client
 	send_message (log_client, 8, sending, TLS_HANDSHAKE, TLS_CLIENTHELLO, random_part, TLS_DH_RSA_SHA1, TLS_DH_RSA_SHA2, TLS_RSA_RSA_SHA1, TLS_RSA_RSA_SHA2);
+	fprintf(log_client, "\n\n");
 	fclose (channel);
 }
 
@@ -37,6 +38,7 @@ void client_states_1 (FILE* log_client, char * ciphersuites_to_use, char * rando
 	fclose (channel);
 	// Save it in log_client
 	send_message (log_client, 2, receiving, received_message);
+	fprintf(log_client, "\n\n");
 	// Get the random from the client
 	get_random_block(received_message,random_from_server);
 	// Get the ciphersuite to use (choosed by the server)
@@ -53,6 +55,7 @@ void client_states_2 (FILE* log_client, char * certificate){
 	fclose (channel);
 	// Save it in log_client
 	send_message (log_client, 2, receiving, received_message);
+	fprintf(log_client, "\n\n");
 	certificate = get_nth_block(received_message,2);
 	free(received_message);
 }

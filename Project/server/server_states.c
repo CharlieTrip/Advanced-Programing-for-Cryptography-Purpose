@@ -44,6 +44,7 @@ void server_states_0 (FILE* log_server, char * ciphersuites_to_use, char * rando
 	fclose(channel);
 	// Save it in log_server
 	send_message (log_server, 2, receiving, received_message);
+	fprintf(log_server, "\n\n");
 	// Get the random from the client
 	get_random_block(received_message,random_from_client);
 	// Chose the best ciphersuite avilable
@@ -56,6 +57,7 @@ void server_states_0 (FILE* log_server, char * ciphersuites_to_use, char * rando
 	send_message (channel, 4, TLS_HANDSHAKE, TLS_SERVERHELLO, random_part, ciphersuites_to_use);
 	// Save it in log_server
 	send_message (log_server, 5, sending, TLS_HANDSHAKE, TLS_SERVERHELLO, random_part, ciphersuites_to_use);
+	fprintf(log_server, "\n\n");
 	fclose(channel);
 	free(received_message);
 }
@@ -70,10 +72,11 @@ void server_state_1(FILE* log_server,char * ciphersuite_to_use){
 	fclose(certificate_file);
 	// Send message to the channel
 	FILE* channel = fopen(link_channel,"w");
-	send_message (channel, 2, TLS_HANDSHAKE, certificate);
+	send_message (channel, 3, TLS_HANDSHAKE, TLS_SERVERHELLO, certificate);
 	fclose(channel);
 	// Save message in log_server
-	send_message (log_server, 3, sending, TLS_HANDSHAKE, certificate);
+	send_message (log_server, 4, sending, TLS_HANDSHAKE, TLS_SERVERHELLO, certificate);
+	fprintf(log_server, "\n\n");
 	free(certificate);
 }
 
