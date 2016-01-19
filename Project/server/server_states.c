@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include "../common/constants.h"
 #include "../common/file.c"
+#include "../common/crypto2.c"
 
 //TODO handle error cases,
 
@@ -63,13 +64,11 @@ void server_states_0 (FILE* log_server, char * ciphersuites_to_use, char * rando
 }
 
 void server_state_1(FILE* log_server,char * ciphersuite_to_use){
-	
+	  
 	// Allocate memory to contain the certificate
 	char * certificate = calloc(BUF_SIZE,sizeof(char));
 	// Read the certificate (yes... 'read_channel' is an abusing of name)
-	FILE* certificate_file = fopen("cert.txt","r+");
-	read_channel(certificate_file,certificate);
-	fclose(certificate_file);
+	certificate = get_certificate();
 	// Send message to the channel
 	FILE* channel = fopen(link_channel,"w");
 	send_message (channel, 3, TLS_HANDSHAKE, TLS_SERVERHELLO, certificate);

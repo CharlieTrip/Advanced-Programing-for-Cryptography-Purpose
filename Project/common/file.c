@@ -256,8 +256,8 @@ int get_nth_length_block(char * message, int n_block){
 
 
 char * get_nth_block(char * message, int n_block){
-/* return the content of the n-th block
-       to not use for extract the random block */
+/* return the content of the n-th block to *
+ * not use for extract the random block    */
     int length;
     length = get_byte_length(message);
     int length_block = 0;

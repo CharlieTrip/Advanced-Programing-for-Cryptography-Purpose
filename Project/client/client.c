@@ -11,7 +11,6 @@ int main(){
 	FILE *log_client;
 	char ciphersuite_to_use[3];
 	char * random_from_server = calloc(32, sizeof(char));
-	char * certificate = calloc(BUF_SIZE,sizeof(char));
 
 	log_client = fopen("./client/log_client.txt","w");
 
@@ -36,7 +35,7 @@ int main(){
 				printf("Client 1\n"); // to delete
 			}
 			else if(state == 2){
-				client_states_2 (log_client,certificate);
+				client_states_2 (log_client);
 				printf("Client 2\n"); // to delete
 			}
 			else if(state == 3){

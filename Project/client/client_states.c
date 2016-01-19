@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include "../common/constants.h"
 #include "../common/file.c"
+#include "../common/crypto2.c"
 
 
 //TODO handle error cases, 
@@ -46,8 +47,9 @@ void client_states_1 (FILE* log_client, char * ciphersuites_to_use, char * rando
 }
 
 
-void client_states_2 (FILE* log_client, char * certificate){
-	
+void client_states_2 (FILE* log_client){
+
+	char * certificate = calloc(BUF_SIZE,sizeof(char));
 	char * received_message = calloc(BUF_SIZE,sizeof(char));
 	FILE* channel = fopen (link_channel,"r");
 	// Read data from channel
@@ -56,8 +58,15 @@ void client_states_2 (FILE* log_client, char * certificate){
 	// Save it in log_client
 	send_message (log_client, 2, receiving, received_message);
 	fprintf(log_client, "\n\n");
-	certificate = get_nth_block(received_message,2);
-	free(received_message);
+	// certificate = get_nth_block(received_message,2);
+	// Open a .pem file to write the certificate
+	FILE *cert_file = fopen("./client/cert-file.pem", "w");
+	// Extract the certificate from the received message and write it in a .pem file
+	certificate = get_nth_block(received_message,3);
+	PEM_write_X509(cert_file, string_to_X509(certificate));
+ 	free(received_message);
+ 	//free(certificate); NON GLI PIACE IL FREE
+ 	fclose(cert_file);
 }
 
 

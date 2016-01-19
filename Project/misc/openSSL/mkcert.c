@@ -107,10 +107,13 @@ int mkcert(X509 **x509p, EVP_PKEY **pkeyp, int bits, int serial, int days)
 	 * correct string type and performing checks on its length.
 	 * Normally we'd check the return value for errors...
 	 */
+	 const unsigned char UK[3] = "UK";
+	 const unsigned char OG[14] = "OpenSSL Group";
+
 	X509_NAME_add_entry_by_txt(name,"C",
-				MBSTRING_ASC, "UK", -1, -1, 0);
+				MBSTRING_ASC, UK, -1, -1, 0);
 	X509_NAME_add_entry_by_txt(name,"CN",
-				MBSTRING_ASC, "OpenSSL Group", -1, -1, 0);
+				MBSTRING_ASC, OG, -1, -1, 0);
 
 	/* Its self signed so set the issuer name to be the same as the
  	 * subject.
