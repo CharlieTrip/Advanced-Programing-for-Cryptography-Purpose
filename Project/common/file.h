@@ -42,7 +42,7 @@ int get_n_of_blocks(char * message);
 
 int get_nth_length_block(char * message, int n_block);
 
-int get_nth_block(char * message, int n_block);
+char * get_nth_block(char * message, int n_block);
 
 void get_random_block(char * message, char * random_block);
 

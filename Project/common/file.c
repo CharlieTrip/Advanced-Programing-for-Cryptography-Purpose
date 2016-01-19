@@ -255,21 +255,21 @@ int get_nth_length_block(char * message, int n_block){
 
 
 
-int get_nth_block(char * message, int n_block){
+char * get_nth_block(char * message, int n_block){
 /* return the content of the n-th block
        to not use for extract the random block */
     int length;
     length = get_byte_length(message);
     int length_block = 0;
     int count_tab = 1;
-    int content;
+    char * content;
 
     for (int i = 0; i < length; ++i){
         if (message[i] == '\t'){
             count_tab++;
         }
         if (count_tab == n_block && message[i] != '\t'){
-                content = atoi(message+i);
+                content = (message+i);
                 break;
         }
     }

@@ -18,7 +18,7 @@ void chose_best_ciphersuite(char * message, char * best_chipersuite){
 	int ciphersuites[n_ciphersuite];
 	int best;
 	for (int i = 0; i < n_ciphersuite; ++i){
-		ciphersuites[i] = get_nth_block(message,4+i);
+		ciphersuites[i] = atoi(get_nth_block(message,4+i));
 	}
 	best = ciphersuites[0];
 	for (int i = 1; i < n_ciphersuite; ++i)
@@ -75,7 +75,6 @@ void server_state_1(FILE* log_server,char * ciphersuite_to_use){
 	// Save message in log_server
 	send_message (log_server, 3, sending, TLS_HANDSHAKE, certificate);
 	free(certificate);
-
 }
 
 

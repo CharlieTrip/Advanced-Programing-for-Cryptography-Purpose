@@ -40,11 +40,11 @@ void client_states_1 (FILE* log_client, char * ciphersuites_to_use, char * rando
 	// Get the random from the client
 	get_random_block(received_message,random_from_server);
 	// Get the ciphersuite to use (choosed by the server)
-	sprintf (ciphersuites_to_use, "%d", get_nth_block(received_message,4));
+	sprintf (ciphersuites_to_use, "%d", atoi(get_nth_block(received_message,4)));
 }
 
 
-void client_states_2 (FILE* log_client){
+void client_states_2 (FILE* log_client, char * certificate){
 	
 	char * received_message = calloc(BUF_SIZE,sizeof(char));
 	FILE* channel = fopen (link_channel,"r");
@@ -53,6 +53,8 @@ void client_states_2 (FILE* log_client){
 	fclose (channel);
 	// Save it in log_client
 	send_message (log_client, 2, receiving, received_message);
+	certificate = get_nth_block(received_message,2);
+	free(received_message);
 }
 
 
