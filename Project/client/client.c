@@ -13,43 +13,45 @@ int main(){
 	char * random_from_server = calloc(32, sizeof(char));
 
 	log_client = fopen("./client/log_client.txt","w");
+	open_semaphore_to_SERVER();
+	char * state = calloc(50,sizeof(char));
+	strcpy(state, "client_hello");
 
-	int state = 0;
-	/* The variable 'state'indicates the state of the client, i.e.
-	* state = 0 means: the client is sending through the cannel to the
-	*				   server 
-	*
-	*
-	*/
-	// TODO add an input command line to make the user able to choose the protocols to use
-	
 	while(true){
 		if (check_semaphore_CLIENT() == true){ // check if the file is exists
 
-			if(state == 0){
-				client_states_0(log_client);
-				printf("Client 0\n"); // to delete
+			if(!strcmp(state, "client_hello")){
+				if(client_hello(log_client)){
+					printf("CLIENT: client_hello\n"); // to delete
+					strcpy(state,"receiving_server_hello");
+					change_semaphore_CLIENT();
+				}	
 			}
-			else if(state == 1){
-				client_states_1(log_client, ciphersuite_to_use, random_from_server);
-				printf("Client 1\n"); // to delete
+			else if(!strcmp(state,"receiving_server_hello")){
+				if(client_receiving_server_hello(log_client, ciphersuite_to_use, random_from_server)){
+					printf("CLIENT: received_server_hello\n"); // to delete
+					strcpy(state,"receiving_certificate");
+					change_semaphore_CLIENT();
+				}
 			}
-			else if(state == 2){
-				client_states_2 (log_client);
-				printf("Client 2\n"); // to delete
+			else if(!strcmp(state,"receiving_certificate")){
+				if(client_receiving_certificate (log_client)){
+					printf("CLIENT: received_server_certificate\n"); // to delete
+					strcpy(state,"receiving_exchange_key");
+					change_semaphore_CLIENT();
+					break;
+				}
+				
 			}
-			else if(state == 3){
-				printf("Client 3\n"); // to delete
-			}
-			else if(state == 4){
-				printf("Client 4\n"); // to delete
+			else if(!strcmp(state,"receiving_exchange_key")){
+				printf("CLIENT: received_receiving_exchange_key\n"); // to delete
 				change_semaphore_CLIENT();
 				break;
 			}
-			state++;
-			change_semaphore_CLIENT();
+			
 		}
 	}
+	free(state);
 	close_all();
 	fclose(log_client);
 

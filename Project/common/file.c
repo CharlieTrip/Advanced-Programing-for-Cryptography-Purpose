@@ -177,7 +177,7 @@ int send_message (FILE* channel, int number_of_strings,...){
 char * gen_rdm_bytestream (size_t num_bytes){
 
     char *stream = calloc (num_bytes,sizeof(char));
-    sleep(1);
+    //sleep(1);
     time_t t;
     srand((unsigned) time(&t));
     

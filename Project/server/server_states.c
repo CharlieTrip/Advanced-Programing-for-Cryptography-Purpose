@@ -12,9 +12,19 @@ const char sending[13] = "**server** :";
 const char link_channel[20] = "./common/channel.txt";
 
 
+int hello_request(FILE* log_server){
+	// Send hello_request to the channel
+	FILE* channel = fopen(link_channel,"w");
+	send_message (channel, 2, TLS_HANDSHAKE, TLS_HELLOREQUEST);
+	fclose(channel);
+	// write hello_request on the server's log
+	send_message (log_server, 3, sending, TLS_HANDSHAKE, TLS_HELLOREQUEST);
+	fprintf(log_server, "\n\n");
+	return 1;
+}
 
 
-void chose_best_ciphersuite(char * message, char * best_chipersuite){
+int chose_best_ciphersuite(char * message, char * best_chipersuite){
 
 	int n_ciphersuite = get_n_of_blocks(message)-3;
 	int ciphersuites[n_ciphersuite];
@@ -30,12 +40,13 @@ void chose_best_ciphersuite(char * message, char * best_chipersuite){
 		}
 	}
 	sprintf(best_chipersuite, "%d", best);
+	return 1;
 }
 
 
 
 
-void server_states_0 (FILE* log_server, char * ciphersuites_to_use, char * random_from_client){
+int server_hello (FILE* log_server, char * ciphersuites_to_use, char * random_from_client){
 
 	/* for the moment we suppose the client can use all 4 types of protocol */
 
@@ -62,9 +73,10 @@ void server_states_0 (FILE* log_server, char * ciphersuites_to_use, char * rando
 	fprintf(log_server, "\n\n");
 	fclose(channel);
 	free(received_message);
+	return 1;
 }
 
-void server_state_1(FILE* log_server,char * ciphersuite_to_use){
+int server_state_1(FILE* log_server,char * ciphersuite_to_use){
 	  
 	// Allocate memory to contain the certificate
 	char * certificate = calloc(BUF_SIZE,sizeof(char));
@@ -78,6 +90,7 @@ void server_state_1(FILE* log_server,char * ciphersuite_to_use){
 	send_message (log_server, 4, sending, TLS_HANDSHAKE, TLS_SERVERHELLO, certificate);
 	fprintf(log_server, "\n\n");
 	free(certificate);
+	return 1;
 }
 
 

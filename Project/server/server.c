@@ -15,45 +15,45 @@ int main(){
 	char * random_from_client = calloc(32, sizeof(char));
 
 	log_server = fopen("./server/log_server.txt","w");
-
-    open_semaphore_to_CLIENT();
-
-	int state = 0;
-	/* The variable 'state'indicates the state of the server, i.e.
-	* state = 0 means: the server read what the client has sent, choose the best ciphersuite between the disponible ones,
-	*				   send the message Hello ecc... to the client
-	*
-	*
-	*/
+	char * state = calloc(50,sizeof(char));
+	strcpy(state, "hello_request");
 
 	while(true){
 		if (check_semaphore_SERVER() == true){  // check if the file is exists
-
-			if(state == 0){
-				server_states_0(log_server, ciphersuite_to_use,random_from_client);
-				printf("Server 0\n"); // to delete
+			if (!strcmp(state, "hello_request")){
+				hello_request(log_server);
+				printf("SERVER: hello_request\n"); // to delete
+				strcpy(state,"server_hello");
+				change_semaphore_SERVER();
 			}
-			else if(state == 1){
+			else if(!strcmp(state, "server_hello")){
+				if(server_hello(log_server, ciphersuite_to_use,random_from_client)){
+					printf("SERVER: server_hello\n"); // to delete
+					strcpy(state,"sending_server");
+					change_semaphore_SERVER();
+				}
+			}
+			else if(!strcmp(state, "sending_server")){
 				server_state_1(log_server,ciphersuite_to_use);
-				printf("Server 1\n"); // to delete
-			}
-			else if(state == 2){
-				printf("Server 2\n"); // to delete
-			}
-			else if(state == 3){
-				printf("Server 3\n"); // to delete
-			}
-			else if(state == 4){
-				printf("Server 4\n"); // to delete
+				printf("SERVER: sent_certificate\n"); // to delete
+				change_semaphore_SERVER();
 				break;
 			}
-			state++;
-			change_semaphore_SERVER();
 		}
 	}
 
+	free(state);
 	close_all();
 	fclose(log_server);
 
-return 0;
+	return 0;
 }
+
+
+
+
+
+
+
+
+

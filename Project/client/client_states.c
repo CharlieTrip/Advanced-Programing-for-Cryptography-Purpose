@@ -13,24 +13,41 @@ const char link_channel[20] = "./common/channel.txt";
 
 
 
-void client_states_0 (FILE* log_client){
+int client_hello (FILE* log_client){
 
 	/* for the moment we suppose the client can use all 4 types of ciphersuite */
-
-	FILE* channel = fopen (link_channel,"w");
-	// Generate Random part
-	char * random_part = calloc (32, sizeof(char));
-	random_part = gen_rdm_bytestream (32);
-	// Send Hello Client to the Server
-	send_message (channel, 7, TLS_HANDSHAKE, TLS_CLIENTHELLO, random_part, TLS_DH_RSA_SHA1, TLS_DH_RSA_SHA2, TLS_RSA_RSA_SHA1, TLS_RSA_RSA_SHA2);
-	// Save it in log_client
-	send_message (log_client, 8, sending, TLS_HANDSHAKE, TLS_CLIENTHELLO, random_part, TLS_DH_RSA_SHA1, TLS_DH_RSA_SHA2, TLS_RSA_RSA_SHA1, TLS_RSA_RSA_SHA2);
+	// Read the channel
+	char * received_message = calloc(BUF_SIZE,sizeof(char));
+	FILE* channel = fopen (link_channel,"r");
+	read_channel (channel, received_message);
+	fclose(channel);
+	// save received message on log_client
+	send_message (log_client, 2, receiving, received_message);
 	fprintf(log_client, "\n\n");
-	fclose (channel);
+	// Verify if a Hello_request is present
+	if(!strcmp(get_nth_block(received_message,2), TLS_HELLOREQUEST)){
+		channel = fopen (link_channel,"w");
+		// Generate Random part
+		char * random_part = calloc (32, sizeof(char));
+		random_part = gen_rdm_bytestream (32);
+		// Send Hello Client to the Server
+		send_message (channel, 7, TLS_HANDSHAKE, TLS_CLIENTHELLO, random_part, TLS_DH_RSA_SHA1, TLS_DH_RSA_SHA2, TLS_RSA_RSA_SHA1, TLS_RSA_RSA_SHA2);
+		// Save it in log_client
+		send_message (log_client, 8, sending, TLS_HANDSHAKE, TLS_CLIENTHELLO, random_part, TLS_DH_RSA_SHA1, TLS_DH_RSA_SHA2, TLS_RSA_RSA_SHA1, TLS_RSA_RSA_SHA2);
+		fprintf(log_client, "\n\n");
+		fclose (channel);
+		free(received_message);
+		return 1;
+	}
+	else
+	{
+		printf("Error: expected a Hello_request, found an unexpected mesage");
+		return 0;
+	}
 }
 
 
-void client_states_1 (FILE* log_client, char * ciphersuites_to_use, char * random_from_server){
+int client_receiving_server_hello (FILE* log_client, char * ciphersuites_to_use, char * random_from_server){
 
 	char * received_message = calloc(BUF_SIZE,sizeof(char));
 	FILE* channel = fopen (link_channel,"r");
@@ -44,10 +61,11 @@ void client_states_1 (FILE* log_client, char * ciphersuites_to_use, char * rando
 	get_random_block(received_message,random_from_server);
 	// Get the ciphersuite to use (choosed by the server)
 	sprintf (ciphersuites_to_use, "%d", atoi(get_nth_block(received_message,4)));
+	return 1;
 }
 
 
-void client_states_2 (FILE* log_client){
+int client_receiving_certificate (FILE* log_client){
 
 	char * certificate = calloc(BUF_SIZE,sizeof(char));
 	char * received_message = calloc(BUF_SIZE,sizeof(char));
@@ -68,6 +86,7 @@ void client_states_2 (FILE* log_client){
  	//free(certificate); NON GLI PIACE IL FREE
  	fclose(cert_file);
 	get_pubkey();
+	return 1;
 }
 
 

@@ -40,9 +40,9 @@ void change_semaphore_CLIENT(){
 	fopen("./common/ok_server.txt","w");
 }
 
-void open_semaphore_to_CLIENT(){
+void open_semaphore_to_SERVER(){
 	/* the server open the communication perimissions */
-	fopen("./common/ok_client.txt","w");
+	fopen("./common/ok_server.txt","w");
 }
 
 void close_all(){
