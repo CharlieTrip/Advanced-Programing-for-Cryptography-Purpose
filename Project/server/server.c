@@ -34,10 +34,11 @@ int main(){
 				}
 			}
 			else if(!strcmp(state, "sending_server")){
-				server_state_1(log_server,ciphersuite_to_use);
-				printf("SERVER: sent_certificate\n"); // to delete
-				change_semaphore_SERVER();
-				break;
+				if(send_certificate(log_server,ciphersuite_to_use)){
+					printf("SERVER: sent_certificate\n"); // to delete
+					change_semaphore_SERVER();
+					break;
+				}
 			}
 		}
 	}

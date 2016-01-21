@@ -220,7 +220,7 @@ int get_n_of_blocks(char * message){
             n_blocks++;
         }
     }
-    return n_blocks;
+    return ++n_blocks;
 }
 
 

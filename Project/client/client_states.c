@@ -31,9 +31,17 @@ int client_hello (FILE* log_client){
 		char * random_part = calloc (32, sizeof(char));
 		random_part = gen_rdm_bytestream (32);
 		// Send Hello Client to the Server
-		send_message (channel, 7, TLS_HANDSHAKE, TLS_CLIENTHELLO, random_part, TLS_DH_RSA_SHA1, TLS_DH_RSA_SHA2, TLS_RSA_RSA_SHA1, TLS_RSA_RSA_SHA2);
+		send_message (channel, 11, TLS_HANDSHAKE, TLS_CLIENTHELLO, random_part, 
+			TLS_DH_RSA_WITH_AES_128_CBC_SHA, TLS_DH_RSA_WITH_AES_256_CBC_SHA, 
+			TLS_DH_RSA_WITH_AES_128_CBC_SHA256, TLS_DH_RSA_WITH_AES_256_CBC_SHA256, 
+			TLS_RSA_WITH_AES_128_CBC_SHA, TLS_RSA_WITH_AES_256_CBC_SHA, 
+			TLS_RSA_WITH_AES_128_CBC_SHA256, TLS_RSA_WITH_AES_256_CBC_SHA256);
 		// Save it in log_client
-		send_message (log_client, 8, sending, TLS_HANDSHAKE, TLS_CLIENTHELLO, random_part, TLS_DH_RSA_SHA1, TLS_DH_RSA_SHA2, TLS_RSA_RSA_SHA1, TLS_RSA_RSA_SHA2);
+		send_message (log_client, 12, sending, TLS_HANDSHAKE, TLS_CLIENTHELLO, random_part, 
+			TLS_DH_RSA_WITH_AES_128_CBC_SHA, TLS_DH_RSA_WITH_AES_256_CBC_SHA, 
+			TLS_DH_RSA_WITH_AES_128_CBC_SHA256, TLS_DH_RSA_WITH_AES_256_CBC_SHA256, 
+			TLS_RSA_WITH_AES_128_CBC_SHA, TLS_RSA_WITH_AES_256_CBC_SHA, 
+			TLS_RSA_WITH_AES_128_CBC_SHA256, TLS_RSA_WITH_AES_256_CBC_SHA256);
 		fprintf(log_client, "\n\n");
 		fclose (channel);
 		free(received_message);

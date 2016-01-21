@@ -76,7 +76,7 @@ int server_hello (FILE* log_server, char * ciphersuites_to_use, char * random_fr
 	return 1;
 }
 
-int server_state_1(FILE* log_server,char * ciphersuite_to_use){
+int send_certificate(FILE* log_server,char * ciphersuite_to_use){
 	  
 	// Allocate memory to contain the certificate
 	char * certificate = calloc(BUF_SIZE,sizeof(char));
@@ -84,14 +84,15 @@ int server_state_1(FILE* log_server,char * ciphersuite_to_use){
 	certificate = get_certificate();
 	// Send message to the channel
 	FILE* channel = fopen(link_channel,"w");
-	send_message (channel, 3, TLS_HANDSHAKE, TLS_SERVERHELLO, certificate);
+	send_message (channel, 3, TLS_HANDSHAKE, TLS_SERVERCERTIFICATE, certificate);
 	fclose(channel);
 	// Save message in log_server
-	send_message (log_server, 4, sending, TLS_HANDSHAKE, TLS_SERVERHELLO, certificate);
+	send_message (log_server, 4, sending, TLS_HANDSHAKE, TLS_SERVERCERTIFICATE, certificate);
 	fprintf(log_server, "\n\n");
 	free(certificate);
 	return 1;
 }
+
 
 
 

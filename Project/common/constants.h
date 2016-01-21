@@ -17,11 +17,15 @@
 // Because we stop the protocol when we have the secret,
 // just the last one has the hmac control using the shared secret as key.
 
-
-const char TLS_RSA_RSA_SHA1[3] = "11\0";
-const char TLS_RSA_RSA_SHA2[3] = "12\0";
-const char TLS_DH_RSA_SHA1[3] = "21\0";
-const char TLS_DH_RSA_SHA2[3] = "22\0";
+const char TLS_NULL_NULL_NULL[3] = "00\0";
+const char TLS_DH_RSA_WITH_AES_128_CBC_SHA[3] = "01\0";
+const char TLS_DH_RSA_WITH_AES_256_CBC_SHA[3] = "02\0";
+const char TLS_DH_RSA_WITH_AES_128_CBC_SHA256[3] = "03\0";
+const char TLS_DH_RSA_WITH_AES_256_CBC_SHA256[3] = "04\0";
+const char TLS_RSA_WITH_AES_128_CBC_SHA[3] = "05\0";
+const char TLS_RSA_WITH_AES_256_CBC_SHA[3] = "06\0";
+const char TLS_RSA_WITH_AES_128_CBC_SHA256[3] = "07\0";
+const char TLS_RSA_WITH_AES_256_CBC_SHA256[3] = "08\0";
 
 
 // 
@@ -38,18 +42,12 @@ const char TLS_HANDSHAKE[3] = "32\0";
 const char TLS_HELLOREQUEST[2] = "0\0";
 const char TLS_CLIENTHELLO[2] = "1\0";
 const char TLS_SERVERHELLO[2] = "2\0";
-const char TLS_CERTIFICATE[3] = "11\0";
+const char TLS_SERVERCERTIFICATE[3] = "11\0";
 const char TLS_SERVERKEYEXCHANGE[3] = "12\0";
 const char TLS_SERVERHELLODONE[3] = "14\0";
 const char TLS_CLIENTKEYEXCHANGE[3] = "16\0";
 const char TLS_FINISHED[3] = "20\0";
 
-
-// So we will have our messages coded in this way:
-// 
-//	 Content Type - Message Type \n
-//	 Message \n
-// 
 
 
 /* NOTE: the memory allocated is one plus the length of the string
