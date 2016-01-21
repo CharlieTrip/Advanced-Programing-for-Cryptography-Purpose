@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 gcc ./server/server.c -o ./server/server -lcrypto -lssl -I/usr/local/opt/openssl/include
 gcc ./client/client.c -o ./client/client -lcrypto -lssl -I/usr/local/opt/openssl/include

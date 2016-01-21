@@ -1,8 +1,8 @@
 **server** :	32	0
 
-**client** :	32	1	YU@G^T[^8EJOQUXBX@5C^4Y:E`JBR5:D	01	02	03	04	05	06	07	08
+**client** :	32	1	2P=5b@PEE\C\W[=KVU`:IJ54^MZCb\TO	01	02	03	04	05	06	07	08
 
-**server** :	32	2	YU@G^T[^8EJOQUXBX@5C^4Y:E`JBR5:D	8
+**server** :	32	2	FI>_?]IFF;O<T=QIMK:QAU=4GKSAF?Q?	8
 
 **server** :	32	11	-----BEGIN CERTIFICATE-----
 MIIB7DCCAVUCAQEwDQYJKoZIhvcNAQEFBQAwPjELMAkGA1UEBhMCSVQxDjAMBgNV
@@ -18,4 +18,6 @@ cwTec/xJ4fokWdF/eFC7dW/vBIzlug+tYel16lmRZTtRY3kxY5RalaU1bPyKyh5J
 Ev5Jely4SvKOF6mLFVbJNA==
 -----END CERTIFICATE-----
 
+
+**server** :	32	14
 

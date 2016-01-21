@@ -37,16 +37,31 @@ int main(){
 			else if(!strcmp(state,"receiving_certificate")){
 				if(client_receiving_certificate (log_client)){
 					printf("CLIENT: received_server_certificate\n"); // to delete
-					strcpy(state,"receiving_exchange_key");
+					if(is_needed_keyexchange(ciphersuite_to_use)){
+						strcpy(state,"receive_exchange_key");
+					}
+					else{
+						strcpy(state,"exchange_key");
+					}
 					change_semaphore_CLIENT();
-					break;
 				}
 				
 			}
-			else if(!strcmp(state,"receiving_exchange_key")){
-				printf("CLIENT: received_receiving_exchange_key\n"); // to delete
+			else if(!strcmp(state,"receive_exchange_key")){
+				if(exchange_key (log_client)){
+				printf("CLIENT: receiveing exchange_key\n"); // to delete
+				strcpy(state,"exchange_key"); //DA FINIRE
 				change_semaphore_CLIENT();
 				break;
+				}
+			}
+			else if(!strcmp(state,"exchange_key")){
+				if(exchange_key (log_client)){
+				printf("CLIENT: exchange_key\n"); // to delete
+				strcpy(state,"BLEBLEBLE"); //DA FINIRE
+				change_semaphore_CLIENT();
+				break;
+				}
 			}
 			
 		}

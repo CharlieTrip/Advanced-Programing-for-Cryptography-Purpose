@@ -29,7 +29,7 @@ int client_hello (FILE* log_client){
 		channel = fopen (link_channel,"w");
 		// Generate Random part
 		char * random_part = calloc (32, sizeof(char));
-		random_part = gen_rdm_bytestream (32);
+		random_part = gen_rdm_bytestream_client (32);
 		// Send Hello Client to the Server
 		send_message (channel, 11, TLS_HANDSHAKE, TLS_CLIENTHELLO, random_part, 
 			TLS_DH_RSA_WITH_AES_128_CBC_SHA, TLS_DH_RSA_WITH_AES_256_CBC_SHA, 
@@ -97,6 +97,23 @@ int client_receiving_certificate (FILE* log_client){
 	return 1;
 }
 
+
+int exchange_key (FILE* log_client){
+	char * received_message = calloc(BUF_SIZE,sizeof(char));
+	FILE* channel = fopen (link_channel,"r");
+	read_channel (channel, received_message);
+	fclose(channel);
+	// save received message on log_client
+	send_message (log_client, 2, receiving, received_message);
+	fprintf(log_client, "\n\n");
+	// Verify if a Hello_request is present
+	if(!strcmp(get_nth_block(received_message,2), TLS_SERVERHELLODONE)){
+		printf("Scrivere codice\n");
+	}
+
+
+	return 1;
+}
 
 
 

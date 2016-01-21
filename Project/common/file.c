@@ -174,7 +174,7 @@ int send_message (FILE* channel, int number_of_strings,...){
 
 
 
-char * gen_rdm_bytestream (size_t num_bytes){
+char * gen_rdm_bytestream_client (size_t num_bytes){
 
     char *stream = calloc (num_bytes,sizeof(char));
     //sleep(1);
@@ -192,6 +192,31 @@ char * gen_rdm_bytestream (size_t num_bytes){
 */
     return stream;
 }
+
+
+
+
+
+char * gen_rdm_bytestream_server (size_t num_bytes){
+
+    char *stream = calloc (num_bytes,sizeof(char));
+    //sleep(1);
+    time_t t;
+    srand((unsigned) time(&t)+10);
+    
+    for (int i = 0; i < num_bytes; i++){
+        stream[i] = 50+(rand () % 50);
+    }
+
+/* c'è un problema da risolvere qui: qundo creo un random char
+* potrebbe essere anche un '\t' o un '\n' e danno problemi in fase
+* di lettura. Per ora ho fatto questa modifica con i 50 ma andrebbe
+* rivista 
+*/
+    return stream;
+}
+
+
 
 
 
