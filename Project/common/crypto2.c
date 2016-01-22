@@ -80,7 +80,7 @@ char * get_certificate() {
   BIO *certbio = NULL;
   FILE *cert_file;
   X509 *cert = NULL;
-  const char cert_filestr[] = "./server/cert-file.pem";
+  const char cert_filestr[] = "./server/RSA_cert.pem";
   certbio = BIO_new(BIO_s_file());
   int ret;
   
@@ -149,6 +149,25 @@ int get_pubkey() {
 }
 
 
+
+
+void chose_best_ciphersuite(char * message, char * best_chipersuite){
+
+  int n_ciphersuite = get_n_of_blocks(message)-3;
+  int ciphersuites[n_ciphersuite];
+  int best;
+  for (int i = 0; i < n_ciphersuite; ++i){
+    ciphersuites[i] = atoi(get_nth_block(message,4+i));
+  }
+  best = ciphersuites[0];
+  for (int i = 1; i < n_ciphersuite; ++i)
+  {
+    if (best<ciphersuites[i]){
+      best = ciphersuites[i];
+    }
+  }
+  sprintf(best_chipersuite, "%d", best);
+}
 
 
 

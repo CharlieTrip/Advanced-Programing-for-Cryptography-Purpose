@@ -38,8 +38,6 @@ Only server has a *certificate.crt* of his public key, signed by the CA.
 
 -> ricordarsi di aggiungere la gestione dei casi in cui i messaggi non vengano mandati correttamente
 
---> aggiungere la session identifier al client hello. non ha utilità nel nostro progetto
-
 
 
 

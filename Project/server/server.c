@@ -15,66 +15,46 @@ int main(){
 	char * random_from_client = calloc(32, sizeof(char));
 
 	log_server = fopen("./server/log_server.txt","w");
-	char * state = calloc(50,sizeof(char));
-	strcpy(state, "hello_request");
+
+    open_semaphore_to_CLIENT();
+
+	int state = 0;
+	/* The variable 'state'indicates the state of the server, i.e.
+	* state = 0 means: the server read what the client has sent, choose the best ciphersuite between the disponible ones,
+	*				   send the message Hello ecc... to the client
+	*
+	*
+	*/
 
 	while(true){
 		if (check_semaphore_SERVER() == true){  // check if the file is exists
-			if (!strcmp(state, "hello_request")){
-				hello_request(log_server);
-				printf("SERVER: hello_request\n"); // to delete
-				strcpy(state,"server_hello");
-				change_semaphore_SERVER();
+
+			if(state == 0){
+				hello_server(log_server, ciphersuite_to_use,random_from_client);
+				printf("Server: hello_server\n"); // to delete
 			}
-			else if(!strcmp(state, "server_hello")){
-				if(server_hello(log_server, ciphersuite_to_use,random_from_client)){
-					printf("SERVER: server_hello\n"); // to delete
-					strcpy(state,"sending_certificate");
-					change_semaphore_SERVER();
-				}
+			else if(state == 1){
+				send_certificate(log_server,ciphersuite_to_use);
+				printf("Server: send_certificate\n"); // to delete
 			}
-			else if(!strcmp(state, "sending_certificate")){
-				if(send_certificate(log_server)){
-					printf("SERVER: sent_certificate\n"); // to delete
-					change_semaphore_SERVER();
-					if(is_needed_keyexchange(ciphersuite_to_use)){
-						strcpy(state,"sending_key_exchange");
-					}
-					else{
-						strcpy(state,"sending_hello_done");
-					}
-					change_semaphore_SERVER();
-				}
+			else if(state == 2){
+				hello_done(log_server);
+				printf("Server: hello_done\n"); // to delete
 			}
-			else if(!strcmp(state, "sending_key_exchange")){
-				if(key_exchange(log_server,ciphersuite_to_use)){
-					printf("SERVER: sent_keyexhange\n");
-					change_semaphore_SERVER();
-					strcpy(state,"sending_hello_done");
-				}
+			else if(state == 3){
+				printf("Server 3\n"); // to delete
 			}
-			else if(!strcmp(state, "sending_hello_done")){
-				if(hello_done(log_server)){
-					printf("SERVER: hello_done\n"); // to delete
-					change_semaphore_SERVER();
-					break;
-				}
+			else if(state == 4){
+				printf("Server 4\n"); // to delete
+				break;
 			}
+			state++;
+			change_semaphore_SERVER();
 		}
 	}
 
-	free(state);
 	close_all();
 	fclose(log_server);
 
-	return 0;
+return 0;
 }
-
-
-
-
-
-
-
-
-

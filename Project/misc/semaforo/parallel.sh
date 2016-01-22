@@ -1,8 +1,5 @@
 #!/bin/bash
 
-gcc ./server/server.c -o ./server/server -lcrypto -lssl -I/usr/local/opt/openssl/include
-gcc ./client/client.c -o ./client/client -lcrypto -lssl -I/usr/local/opt/openssl/include
-
 for cmd in "$@"; do {
   echo "Process \"$cmd\" started";
   $cmd & pid=$!
