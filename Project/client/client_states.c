@@ -71,6 +71,13 @@ void receive_certificate (FILE* log_client){
 }
 
 
+int exchange_key(FILE* log_client, char * ciphersuite_to_use){
+
+	
+
+	return 1;
+}
+
 
 
 

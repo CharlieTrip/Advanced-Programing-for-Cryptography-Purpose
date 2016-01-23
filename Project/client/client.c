@@ -39,7 +39,8 @@ int main(){
 				printf("Client: receive_server_certificate\n"); // to delete
 			}
 			else if(state == 3){
-				printf("Client 3\n"); // to delete
+				exchange_key(log_client, ciphersuite_to_use);
+				printf("Client: exchange_key\n"); // to delete
 			}
 			else if(state == 4){
 				printf("Client 4\n"); // to delete
