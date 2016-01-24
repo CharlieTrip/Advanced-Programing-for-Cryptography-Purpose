@@ -12,7 +12,8 @@ int main(){
 
 	FILE *log_server;
 	char ciphersuite_to_use[3];
-	char * random_from_client = calloc(32, sizeof(char));
+	char * random_from_client = calloc(RANDOM_DIM_HELLO+1, sizeof(char));
+	char * premaster_secret = calloc(BUF_SIZE,sizeof(char));
 
 	log_server = fopen("./server/log_server.txt","w");
 
@@ -27,7 +28,7 @@ int main(){
 	*/
 
 	while(true){
-		if (check_semaphore_SERVER() == true){  // check if the file is exists
+		if (check_semaphore_SERVER() == true){  // checks if the file is exists
 
 			if(state == 0){
 				hello_server(log_server, ciphersuite_to_use,random_from_client);
@@ -42,10 +43,12 @@ int main(){
 				printf("Server: hello_done\n"); // to delete
 			}
 			else if(state == 3){
-				printf("Server 3\n"); // to delete
+				receive_exchange_key(log_server, ciphersuite_to_use, premaster_secret);
+				printf("Server: receiving exchange_key\n"); // to delete
 			}
 			else if(state == 4){
 				printf("Server 4\n"); // to delete
+				change_semaphore_SERVER();
 				break;
 			}
 			state++;
@@ -53,6 +56,8 @@ int main(){
 		}
 	}
 
+	free(random_from_client);
+	//free(premaster_secret);
 	close_all();
 	fclose(log_server);
 

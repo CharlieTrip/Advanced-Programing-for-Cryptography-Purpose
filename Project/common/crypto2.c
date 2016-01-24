@@ -100,11 +100,9 @@ char * get_certificate() {
 
 
 
-int get_pubkey() {
+int get_pubkey(const char * pubkey_filestr, const char * cert_filestr) {
 
-  const char cert_filestr[] = "./client/cert-file.pem";
-  const char pubkey_filestr[] = "./client/public_key.pem";
-             EVP_PKEY *pkey = NULL;
+  EVP_PKEY *pkey = NULL;
   BIO              *certbio = NULL;
   X509                *cert = NULL;
   int ret;
@@ -171,12 +169,55 @@ void chose_best_ciphersuite(char * message, char * best_chipersuite){
 
 
 
+RSA * TLS_createRSAWithFilename(char * filename, char * public_or_private){
+
+  /* get the RSA public or private key */
+
+  int public;
+  if(!strcmp(public_or_private,"public")){
+    public = 1;
+  }
+  else{
+    public = 0;
+  }
+  FILE * fp = fopen(filename,"rb");
+ 
+  if(fp == NULL){
+      printf("Unable to open file %s \n",filename);
+      return NULL;    
+  }
+  RSA *rsa= RSA_new() ;
+  if(public){
+      rsa = PEM_read_RSA_PUBKEY(fp, &rsa,NULL, NULL);
+  }
+  else{
+      rsa = PEM_read_RSAPrivateKey(fp, &rsa,NULL, NULL);
+  }
+
+  return rsa;
+}
 
 
 
 
+ 
+int TLS_RSA_public_encrypt(unsigned char * data, int data_len, const char * key, char *encrypted){
+  RSA * pubkey = TLS_createRSAWithFilename((char *) key, "public");
+  int result = RSA_public_encrypt(data_len, data,(unsigned char *) encrypted, pubkey, RSA_PKCS1_PADDING);
+  if (pubkey)
+    RSA_free(pubkey);
+  return result;
+}
 
 
+
+int TLS_RSA_private_decrypt(unsigned char * enc_data, int data_len, const char * key, unsigned char * decrypted){
+    RSA * privkey = TLS_createRSAWithFilename((char *) key,"private");
+    int  result = RSA_private_decrypt(data_len, enc_data, decrypted, privkey, RSA_PKCS1_PADDING);
+      if (privkey)
+    RSA_free(privkey);
+    return result;
+}
 
 
 

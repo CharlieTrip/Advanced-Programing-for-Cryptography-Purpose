@@ -49,5 +49,5 @@ void close_all(){
     /* close all the connection */
     remove("./common/ok_client.txt");
     remove("./common/ok_server.txt");
-    remove("./common/channel.txt");
+    //remove("./common/channel.txt");
 }

@@ -27,17 +27,12 @@ Only server has a *certificate.crt* of his public key, signed by the CA.
 	+ **Client** : will contain the client file 
 	+ **Common** : will contain the common file to use
 
-
 ---
+
 
 + REMEMBER (ALE) fix the max length of the string
 
-+ REMEMBER concordare se scrivere anche un numero per ogni comunicazione oppure no
-
--> remember ALE: risolvi o vedi il problema dei random come stringhe (vedi info nella funzione che li genera)
-
 -> ricordarsi di aggiungere la gestione dei casi in cui i messaggi non vengano mandati correttamente
-
 
 
 

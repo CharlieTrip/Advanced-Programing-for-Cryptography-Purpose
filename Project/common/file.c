@@ -19,7 +19,7 @@
 #include <time.h>
 #include <openssl/rand.h>
 
-#define BUF_SIZE ( 2048 )
+#define BUF_SIZE ( 4098 )
  
 
 int get_nth_line( FILE *f, int line_no, char *content_of_line)
@@ -107,35 +107,34 @@ int read_channel (FILE *channel, char *content){
 
 /* 
 * Read the content of the channel
+*
+OLD VERSION
+fread(conte,BUF_SIZE+1,1,channel);
+return 1;
 */
 
-    size_t bytes_read;
-    char   buf[ BUF_SIZE ];
-    size_t curr_alloc = BUF_SIZE, curr_ofs = 0;
+    size_t bytes_read = 0;
+    char   buf[ BUF_SIZE+1 ];
+    size_t curr_alloc = BUF_SIZE+1, curr_ofs = 0;
 
-    while ( ( bytes_read = fread( buf, 1, BUF_SIZE, channel ) )  > 0 )
-    {
+    while ( ( bytes_read = fread( buf, 1, BUF_SIZE, channel ) )  > 0 ){
         int i;
- 
-        for ( i = 0 ; i < bytes_read ; i++ )
-        {
-                if ( curr_ofs >= curr_alloc )
-                {
+        for ( i = 0 ; i < bytes_read ; i++ ){
+                if ( curr_ofs >= curr_alloc ){
                     curr_alloc <<= 1;
                     content = realloc( content, curr_alloc );
- 
                     if ( !content )    /* out of memory? */
                         return -1;
                 }
                 content[ curr_ofs++ ] = buf[i];
             }
- 
             if ( buf[i] == '\0' ){
                 break;
         }
     }
     return 0;
 }
+
 
 int send_message (FILE* channel, int number_of_strings,...){
 
@@ -153,7 +152,7 @@ int send_message (FILE* channel, int number_of_strings,...){
     va_list valist;
     va_start(valist,number_of_strings); //initialization of the va_list
 
-    char * to_be_send = (char *) calloc (BUF_SIZE, sizeof(char));
+    char * to_be_send = (char *) calloc (BUF_SIZE+1, sizeof(char));
 
     for(int i = 0; i<number_of_strings; i++){
         if(i != 0){
@@ -176,9 +175,12 @@ int send_message (FILE* channel, int number_of_strings,...){
 
 char * gen_rdm_bytestream(size_t num_bytes){
 
+    /* Return a pointer to a string of random bytes  *
+     * of a num_bytes length in byte                 */
+
     int byte_count = 1;
     char data[1];
-    char *stream = calloc (num_bytes,sizeof(char));
+    char *stream = calloc (num_bytes+1,sizeof(char));
     FILE *fp = fopen("/dev/urandom", "r");
     fread(&data, 1, byte_count, fp);
     fclose(fp);
@@ -187,6 +189,7 @@ char * gen_rdm_bytestream(size_t num_bytes){
     for (int i = 0; i < num_bytes; i++){
         stream[i] = 50+(rand () % 50);
     }
+    stream[num_bytes+1] = '\0';
     return stream;
 }
 
@@ -268,6 +271,7 @@ char * get_nth_block(char * message, int n_block){
 void get_random_block(char * message, char * random_block){
 /* use this code to get the random block from the message */
 
+    int random_block_position = 4;
     int length;
     length = get_byte_length(message);
     int count_tab = 1;
@@ -276,7 +280,7 @@ void get_random_block(char * message, char * random_block){
         if (message[i] == '\t'){
             count_tab++;
         }
-        if (count_tab == 3 && message[i] != '\t'){
+        if (count_tab == 4 && message[i] != '\t'){
                  strncpy (random_block, message+i,  32);
                 break;
         }

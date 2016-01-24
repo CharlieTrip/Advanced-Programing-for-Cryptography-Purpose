@@ -6,12 +6,13 @@
 #include "client_states.c"
 
 
+
 int main(){
 
 	FILE *log_client;
 	char ciphersuite_to_use[3];
-	char * random_from_server = calloc(32, sizeof(char));
-
+	char * random_from_server = calloc(RANDOM_DIM_HELLO+1, sizeof(char));
+	char * premaster_secret = calloc(2+RANDOM_DIM_KEY_EXCHANGE+1,sizeof(char));
 	log_client = fopen("./client/log_client.txt","w");
 
 	int state = 0;
@@ -39,12 +40,13 @@ int main(){
 				printf("Client: receive_server_certificate\n"); // to delete
 			}
 			else if(state == 3){
-				exchange_key(log_client, ciphersuite_to_use);
+				exchange_key(log_client, ciphersuite_to_use, premaster_secret);
 				printf("Client: exchange_key\n"); // to delete
 			}
 			else if(state == 4){
-				printf("Client 4\n"); // to delete
+				
 				change_semaphore_CLIENT();
+				printf("Client 4\n"); // to delete
 				break;
 			}
 			state++;
@@ -53,6 +55,8 @@ int main(){
 	}
 	close_all();
 	fclose(log_client);
+	free(random_from_server);
+	free(premaster_secret);
 
 	return 0;
 }
