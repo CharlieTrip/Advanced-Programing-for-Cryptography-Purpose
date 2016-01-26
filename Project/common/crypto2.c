@@ -221,6 +221,66 @@ int TLS_RSA_private_decrypt(unsigned char * enc_data, int data_len, const char *
 
 
 
+int HMAC_SHA1(unsigned char* key ,unsigned int lkey, unsigned char* data, unsigned int ldata, unsigned char* expected , unsigned char* result){
+  unsigned int result_len = 20;
+  int i;
+  unsigned char * results;
+  static char res_hexstring[40];
+  // result = HMAC(EVP_sha256(), key, 4, data, 28, NULL, NULL);
+  results = HMAC(EVP_sha1(), key, lkey, data, ldata, NULL, NULL);
+  for (i = 0; i < result_len; i++) {
+    sprintf(&(res_hexstring[i * 2]), "%02x", results[i]);
+  }
+  
+  for (i=0; i < (result_len*2); i++) {
+    result[i] = res_hexstring[i];
+  }
+
+  if (strcmp((char*) res_hexstring, (char*) expected) == 0) {
+    return 0;
+  } else {
+    return -1;
+  }
+}
+
+
+
+int HMAC_SHA2(unsigned char* key ,unsigned int lkey, unsigned char* data, unsigned int ldata, unsigned char* expected ,unsigned char* result){
+  unsigned int result_len = 32;
+  int i;
+  unsigned char * results;
+  static char res_hexstring[64];
+  results = HMAC(EVP_sha256(), key, lkey, data, ldata, NULL, NULL);
+  for (i = 0; i < result_len; i++) {
+    sprintf(&(res_hexstring[i * 2]), "%02x", results[i]);
+  }
+
+  for (i=0; i < (result_len*2); i++) {
+    result[i] = res_hexstring[i];
+  }
+
+  if (strcmp((char*) res_hexstring, (char*) expected) == 0) {
+    return 0;
+  } else {
+    return -1;
+  }
+}
+
+
+int HMAC_SHA1_file(FILE* file , unsigned char* key, unsigned int lkey, unsigned char* expected , unsigned char* result){
+  char *data = calloc(BUF_SIZE,sizeof(char));
+  read_channel(file,data);
+  return HMAC_SHA1(key,lkey,data,(unsigned int)strlen(data),expected,result);
+}
+
+int HMAC_SHA2_file(FILE* file , unsigned char* key, unsigned int lkey, unsigned char* expected , unsigned char* result){
+  char *data = calloc(BUF_SIZE,sizeof(char));
+  read_channel(file,data);
+  return HMAC_SHA2(key,lkey,data,(unsigned int) strlen(data),expected,result);
+}
+
+
+
 
 
 

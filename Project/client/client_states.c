@@ -62,6 +62,8 @@ void receive_certificate (FILE* log_client){
 }
 
 
+
+
 int exchange_key(FILE* log_client, char * ciphersuite_to_use, char * premaster_secret){
 
 	char * received_message = calloc(BUF_SIZE+1,sizeof(char));
@@ -80,6 +82,10 @@ int exchange_key(FILE* log_client, char * ciphersuite_to_use, char * premaster_s
 	else 
 		return 0;
 }
+
+
+
+
 
 int change_cipher(FILE* log_client, char * secret, int sha){
 
