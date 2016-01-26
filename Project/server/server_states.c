@@ -7,7 +7,7 @@
 
 
 
-void hello_server (FILE* log_server, char * ciphersuites_to_use, char * random_from_client){
+void hello_server (FILE* log_server, char * ciphersuites_to_use, char * random_from_client, char * random_from_server){
 
 	/* for the moment we suppose the client can use all 4 types of protocol */
 
@@ -24,13 +24,12 @@ void hello_server (FILE* log_server, char * ciphersuites_to_use, char * random_f
 	// Chose the best ciphersuite avilable
 	chose_best_ciphersuite (received_message, ciphersuites_to_use);
 	// Generate Random part
-	char * random_part = calloc(RANDOM_DIM_HELLO+1, sizeof(char));
-	random_part = gen_rdm_bytestream(RANDOM_DIM_HELLO);
+	random_from_server = gen_rdm_bytestream(RANDOM_DIM_HELLO);
 	// Send Hello Server to the Client
 	channel = fopen(link_channel,"w");
-	send_message (channel, 5, TLS_VERSION, TLS_HANDSHAKE, TLS_SERVERHELLO, random_part, ciphersuites_to_use);
+	send_message (channel, 5, TLS_VERSION, TLS_HANDSHAKE, TLS_SERVERHELLO, random_from_server, ciphersuites_to_use);
 	// Save it in log_server
-	send_message (log_server, 6, sending, TLS_VERSION, TLS_HANDSHAKE, TLS_SERVERHELLO, random_part, ciphersuites_to_use);
+	send_message (log_server, 6, sending, TLS_VERSION, TLS_HANDSHAKE, TLS_SERVERHELLO, random_from_server, ciphersuites_to_use);
 	fprintf(log_server, "\n\n");
 	fclose(channel);
 	free(received_message);

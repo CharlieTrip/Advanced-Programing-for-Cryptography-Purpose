@@ -51,8 +51,8 @@ int main(){
 				receive_certificate (log_client);
 				printf("Client: receive_server_certificate\n"); // to delete
 				if(is_needed_keyexchange(ciphersuite_to_use)){
-					state = 3;
-				}
+					state = 3; // here we see if the key_echange from server is needed or not
+				}              // if not we jump a state 
 				else{
 					state = 4;
 				}
@@ -65,7 +65,9 @@ int main(){
 			else if(state == 4){
 				exchange_key(log_client, ciphersuite_to_use, premaster_secret);
 				printf("Client: exchange_key\n"); // to delete
-				state++;
+				state++; // here we need to see if the client has to to the change cipher,
+						 // maybe with a function like "is_needed_change_cipher",
+						 // if not, then just send the "client_finished" message
 			}
 			else if(state == 5){
 				change_semaphore_CLIENT();
