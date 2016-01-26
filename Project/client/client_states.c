@@ -5,18 +5,17 @@
 
 //TODO handle error cases, 
 
-void hello_client (FILE* log_client){
+void hello_client (FILE* log_client, char * random_from_client){
 
 	/* for the moment we suppose the client can use all 4 types of ciphersuite */
 
 	FILE* channel = fopen (link_channel,"w");
 	// Generate Random part
-	char * random_part = calloc (RANDOM_DIM_HELLO+1, sizeof(char));
-	random_part = gen_rdm_bytestream (RANDOM_DIM_HELLO);
+	random_from_client = gen_rdm_bytestream (RANDOM_DIM_HELLO);
 	// Send Hello Client to the Server
-	send_message (channel, 6, TLS_VERSION, TLS_HANDSHAKE, TLS_CLIENTHELLO, random_part, TLS_RSA_RSA_SHA1, TLS_RSA_RSA_SHA2);
+	send_message (channel, 6, TLS_VERSION, TLS_HANDSHAKE, TLS_CLIENTHELLO, random_from_client, TLS_RSA_RSA_SHA1, TLS_RSA_RSA_SHA2);
 	// Save it in log_client
-	send_message (log_client, 7, sending, TLS_VERSION, TLS_HANDSHAKE, TLS_CLIENTHELLO, random_part, TLS_RSA_RSA_SHA1, TLS_RSA_RSA_SHA2);
+	send_message (log_client, 7, sending, TLS_VERSION, TLS_HANDSHAKE, TLS_CLIENTHELLO, random_from_client, TLS_RSA_RSA_SHA1, TLS_RSA_RSA_SHA2);
 	fprintf(log_client, "\n\n");
 	fclose (channel);
 }
@@ -89,50 +88,35 @@ int exchange_key(FILE* log_client, char * ciphersuite_to_use, char * premaster_s
 
 int change_cipher(FILE* log_client, char * secret, int sha){
 
-
-	return 1;
-
-	/* for the moment we suppose the client can use all 4 types of ciphersuite */
-
 	FILE* channel = fopen (link_channel,"w");
 	FILE* tmp_log = log_client;
-
-
 
 	// Send ChangeCipherSuite to the Server
 	send_message (channel, 1, TLS_CHANGECIPHERSPEC);
 	send_message (log_client, 2, sending , TLS_CHANGECIPHERSPEC);
 	fprintf(log_client,  "\n\n");
-	
 	fclose (channel);
-
+	
 	// 
 	//  Server must save the log until here to check after
 	//
 
-
 	// Generate Hash of the log
-	char * hashed_log; 
-
+	char * hashed_log;
 	if (sha == 1){
 		hashed_log = calloc (40 , sizeof(char));
-		HMAC_SHA1_file(tmp_log,secret,(int)strlen(secret),(unsigned char *)"",hashed_log);
+		HMAC_SHA1_file(tmp_log, (unsigned char *) secret, (int)strlen(secret), (unsigned char *) "", (unsigned char *) hashed_log);
 	}
 	else {
 		hashed_log = calloc (64 , sizeof(char));
-		HMAC_SHA2_file(tmp_log,secret,(int)strlen(secret),(unsigned char *)"",hashed_log);
+		HMAC_SHA2_file(tmp_log, (unsigned char *) secret, (int)strlen(secret), (unsigned char *) "", (unsigned char *) hashed_log);
 	}
-
-
-
 	// Send finish
-	send_message (channel, 3 ,TLS_HANDSHAKE , TLS_FINISHED , hashed_log);
-	send_message (log_client, 4 , sending, TLS_HANDSHAKE , TLS_FINISHED , hashed_log);
+	send_message (channel, 4, TLS_VERSION, TLS_HANDSHAKE , TLS_FINISHED , hashed_log);
+	send_message (log_client, 5, sending, TLS_VERSION, TLS_HANDSHAKE , TLS_FINISHED , hashed_log);
 	fprintf(log_client,  "\n\n");
 	
-
-
-	return 0;
+	return 1;
 }
 
 

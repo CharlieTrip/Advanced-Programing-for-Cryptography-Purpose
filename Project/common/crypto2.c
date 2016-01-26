@@ -21,53 +21,48 @@ char * X509_to_string(X509 *cert) {
 
   /* transform a x509 file into a string */
 
-    BIO *bio = NULL;
-    char *string = NULL;
+  BIO *bio = NULL;
+  char *string = NULL;
 
-    if (NULL == cert) {
-        return NULL;
-    }
-
-    bio = BIO_new(BIO_s_mem());
-    if (NULL == bio) {
-        return NULL;
-    }
-
-    if (0 == PEM_write_bio_X509(bio, cert)) {
-        BIO_free(bio);
-        return NULL;
-    }
-
-    string = (char *) malloc(bio->num_write + 1);
-    if (NULL == string) {
-        BIO_free(bio);
-        return NULL;    
-    }
-
-    memset(string, 0, bio->num_write + 1);
-    BIO_read(bio, string, bio->num_write);
+  if (NULL == cert){
+    return NULL;
+  }
+  bio = BIO_new(BIO_s_mem());
+  if (NULL == bio){
+    return NULL;
+  }
+  if (0 == PEM_write_bio_X509(bio, cert)){
     BIO_free(bio);
-    return string;
+    return NULL;
+  }
+  string = (char *) malloc(bio->num_write + 1);
+  if (NULL == string){
+    BIO_free(bio);
+    return NULL;    
+  }
+  memset(string, 0, bio->num_write + 1);
+  BIO_read(bio, string, bio->num_write);
+  BIO_free(bio);
+  return string;
 }
 
 
 X509 *string_to_X509(char *string) {
 
-    X509 *cert = NULL;
-    BIO *bio = NULL;
+/* transform a string into a x509 file */  
 
-    if (NULL == string) {
-        return NULL;
-    }
-
-    bio = BIO_new_mem_buf(string, strlen(string));
-    if (NULL == bio) {
-        return NULL;
-    }
-
-    cert = PEM_read_bio_X509(bio, NULL, NULL, NULL);
-    BIO_free(bio);
-    return cert;
+  X509 *cert = NULL;
+  BIO *bio = NULL;
+  if (NULL == string){
+    return NULL;
+  }
+  bio = BIO_new_mem_buf(string, strlen(string));
+  if (NULL == bio){
+    return NULL;
+  }
+  cert = PEM_read_bio_X509(bio, NULL, NULL, NULL);
+  BIO_free(bio);
+  return cert;
 }
 
 
@@ -221,7 +216,7 @@ int TLS_RSA_private_decrypt(unsigned char * enc_data, int data_len, const char *
 
 
 
-int HMAC_SHA1(unsigned char* key ,unsigned int lkey, unsigned char* data, unsigned int ldata, unsigned char* expected , unsigned char* result){
+int HMAC_SHA1(unsigned char* key, unsigned int lkey, unsigned char* data, unsigned int ldata, unsigned char* expected , unsigned char* result){
   unsigned int result_len = 20;
   int i;
   unsigned char * results;
@@ -270,18 +265,28 @@ int HMAC_SHA2(unsigned char* key ,unsigned int lkey, unsigned char* data, unsign
 int HMAC_SHA1_file(FILE* file , unsigned char* key, unsigned int lkey, unsigned char* expected , unsigned char* result){
   char *data = calloc(BUF_SIZE,sizeof(char));
   read_channel(file,data);
-  return HMAC_SHA1(key,lkey,data,(unsigned int)strlen(data),expected,result);
+  return HMAC_SHA1(key,lkey,(unsigned char *) data,(unsigned int)strlen(data), expected,result);
 }
 
 int HMAC_SHA2_file(FILE* file , unsigned char* key, unsigned int lkey, unsigned char* expected , unsigned char* result){
   char *data = calloc(BUF_SIZE,sizeof(char));
   read_channel(file,data);
-  return HMAC_SHA2(key,lkey,data,(unsigned int) strlen(data),expected,result);
+  return HMAC_SHA2(key,lkey, (unsigned char *) data,(unsigned int) strlen(data), expected,result);
 }
 
 
 
 
+int is_needed_keyexchange(char * ciphersuite_to_use){
+  /* return 1 if key_exchange has to be done, 0 otherwise */
+
+  if (atoi(ciphersuite_to_use) == atoi(TLS_RSA_RSA_SHA1) || atoi(ciphersuite_to_use) == atoi(TLS_RSA_RSA_SHA2)){
+  //DEVO CAPIRE ANCORA BENE COSA FARE CON TLS_DH_RSA
+    return 0;
+  }
+  else 
+    return 1;
+}
 
 
 

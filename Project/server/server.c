@@ -43,7 +43,7 @@ int main(){
 			}
 			else if(state == 3){
 				receive_exchange_key(log_server, ciphersuite_to_use, premaster_secret);
-				printf("Server: receiving exchange_key\n"); // to delete
+				printf("Server: receiving client_exchange_key\n"); // to delete
 			}
 			else if(state == 4){
 				printf("Server 4\n"); // to delete
