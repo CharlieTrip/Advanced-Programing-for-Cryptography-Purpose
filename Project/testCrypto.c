@@ -1,4 +1,7 @@
 #include "common/crypto.c"
+#include "common/file.c"
+
+#define BUF_SIZE ( 2048 )
 
 
 int main(int argc, char **argv){
@@ -36,7 +39,7 @@ int main(int argc, char **argv){
 	// Test Certificati
 	// 
 	// printf("%d\n", verifyCertificate("./server/cert-file.pem"));
-	printf("%d\n", getPubKey("./server/cert-file.pem"));
+	// printf("%d\n", getPubKey("./server/cert-file.pem"));
 
 
 
@@ -47,10 +50,26 @@ int main(int argc, char **argv){
 	// unsigned int result_len = 16;
 	// unsigned char * results[65];
 	// int i;
-	// k = HMAC_MD5((unsigned char *)"abc",3,(unsigned char *)"abc",3,(unsigned char * )"f71cda1c893766a115234db7fdd59f63" , results);
+	// k = HMAC_SHA2((unsigned char *)"abc",3,(unsigned char *)"abc",3,(unsigned char * )"5b333a389b4e9a2358ac5392bf2a64dc68e3c943" , results);
 	// printf("%s\n",results);
 
 
+	//
+	// Test HMAC on file
+	//
+	// FILE *file;
+	// file = fopen("./test.txt","r");
+	// unsigned char *content = calloc(BUF_SIZE,sizeof(unsigned char));
+	// HMAC_SHA1_file(file,(unsigned char *)"abc",3,"",content);
+	// fclose(file);
+	// printf("%d st1r\n",(unsigned int) strlen(content));
+	// printf("%s \n" , content);
+ 	// file = fopen("./test.txt","r");
+	// HMAC_SHA2_file(file,(unsigned char *)"abc",3,(unsigned char *)"",content);
+	// fclose(file);
+	// printf("%d st1r\n",(unsigned int) strlen(content));
+ 	// printf("%s \n" , content);
+    
 
 	// 
 	// Test RSA
