@@ -63,7 +63,7 @@ void receive_certificate (FILE* log_client){
 
 
 
-int exchange_key(FILE* log_client, char * ciphersuite_to_use, char * premaster_secret){
+int exchange_key(FILE* log_client, char * ciphersuite_to_use, char * premaster_secret, char * random_from_client, char * random_from_server){
 
 	char * received_message = calloc(BUF_SIZE+1,sizeof(char));
 	FILE* channel = fopen (link_channel,"r");
@@ -74,12 +74,21 @@ int exchange_key(FILE* log_client, char * ciphersuite_to_use, char * premaster_s
 	send_message (log_client, 2, receiving, received_message);
 	fprintf(log_client, "\n\n");
 	free(received_message);
-	if (atoi(ciphersuite_to_use) == atoi(TLS_RSA_RSA_SHA1) || atoi(ciphersuite_to_use) == atoi(TLS_RSA_RSA_SHA2)){
+	if ( !(atoi(ciphersuite_to_use) == atoi(TLS_RSA_RSA_SHA1) || atoi(ciphersuite_to_use) == atoi(TLS_RSA_RSA_SHA2))){
 			//DEVO CAPIRE ANCORA BENE COSA FARE CON TLS_DH_RSA
-		return encrypt_secret_RSA(log_client, premaster_secret);
+		printf("CLIENT: error computing RSA");
+		return 0;
 	}
 	else 
-		return 0;
+		encrypt_secret_RSA(log_client, premaster_secret);
+
+	unsigned char * master_secret = calloc(48+1,sizeof(char));
+	compute_master_secret (master_secret, random_from_client, random_from_server, premaster_secret);
+	printf("Client: master_secret:   \n");
+	for(int i = 0; i<48; i++){
+		printf("%c",master_secret[i]);
+	}
+	printf("\n");
 }
 
 

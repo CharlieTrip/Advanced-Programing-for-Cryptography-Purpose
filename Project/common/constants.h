@@ -22,6 +22,10 @@ const char TLS_DH_RSA_SHA1[3] = "10\0";
 const char TLS_DH_RSA_SHA2[3] = "11\0";
 const char TLS_RSA_RSA_SHA1[3] = "12\0";
 const char TLS_RSA_RSA_SHA2[3] = "13\0";
+const char TLS_RSA_RSA_MD5[3] = "14\0";
+
+
+
 
 // 
 // The "content type" that can be send in our implementation

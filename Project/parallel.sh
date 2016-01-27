@@ -1,7 +1,7 @@
 #!/bin/bash
 
-gcc ./server/server.c -o ./server/server -lcrypto -lssl -I/usr/local/opt/openssl/include
-gcc ./client/client.c -o ./client/client -lcrypto -lssl -I/usr/local/opt/openssl/include
+gcc ./server/server.c -o ./server/server -lcrypto -lssl -I/usr/local/opt/openssl/include -L/usr/local/opt/openssl/lib
+gcc ./client/client.c -o ./client/client -lcrypto -lssl -I/usr/local/opt/openssl/include -L/usr/local/opt/openssl/lib
 
 for cmd in "$@"; do {
   echo "Process \"$cmd\" started";

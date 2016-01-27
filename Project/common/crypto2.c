@@ -11,6 +11,7 @@
 #include <openssl/x509.h>
 #include <openssl/x509_vfy.h>
 #include <openssl/x509v3.h>
+#include <openssl/kdf.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -291,6 +292,38 @@ int is_needed_keyexchange(char * ciphersuite_to_use){
 
 
 
+int compute_master_secret(unsigned char * master_secret, char * random_from_client, char * random_from_server, char * premaster_secret) {
+
+  char label = malloc(78+1,sizeof(char));
+  strcpy(label,"master secret");
+  strncat(label,random_from_client,32);
+  strncat(label,random_from_server,32);
+  EVP_PKEY_CTX *pctx;
+  size_t outlen = sizeof(master_secret);
+  pctx = EVP_PKEY_CTX_new_id(EVP_PKEY_TLS1_PRF, NULL);
+  if (EVP_PKEY_derive_init(pctx) <= 0){
+    return 0;
+    printf("Error computing master key\n");
+  }
+  if (EVP_PKEY_CTX_set_tls1_prf_md(pctx, EVP_md5_sha1()) <= 0){
+    return 0;
+    printf("Error computing master key\n");
+  }
+  if (EVP_PKEY_CTX_set1_tls1_prf_secret(pctx, premaster_secret, 256) <= 0){
+    return 0;
+    printf("Error computing master key\n");
+  }
+  if (EVP_PKEY_CTX_add1_tls1_prf_seed(pctx, label, 78) <= 0){
+    return 0;
+    printf("Error computing master key\n");
+  }
+  if (EVP_PKEY_derive(pctx, master_secret, &outlen) <= 0){
+    return 0;
+    printf("Error computing master key\n");
+  }
+  free(label);
+  return 1;
+}
 
 
 

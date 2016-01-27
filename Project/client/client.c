@@ -63,7 +63,7 @@ int main(){
 				state++;
 			}
 			else if(state == 4){
-				exchange_key(log_client, ciphersuite_to_use, premaster_secret);
+				exchange_key(log_client, ciphersuite_to_use, premaster_secret, random_from_client, random_from_server);
 				printf("Client: exchange_key\n"); // to delete
 				state++; // here we need to see if the client has to to the change cipher,
 						 // maybe with a function like "is_needed_change_cipher",
