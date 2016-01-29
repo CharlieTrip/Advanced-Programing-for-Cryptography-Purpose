@@ -23,9 +23,9 @@ int encrypt_secret_RSA(FILE* log_client, char * premaster_secret){
 	// get random part of the premaster_secret
 	random_stream = gen_rdm_bytestream(RANDOM_DIM_KEY_EXCHANGE);
 	// copy TLS version to the head of the premaster_secret
-	strcpy(premaster_secret,TLS_VERSION);
+	memcpy(premaster_secret,TLS_VERSION,2);
 	// add the random part previously obtained to the premaster_secret
-	strcat(premaster_secret,random_stream);
+	memcpy(premaster_secret+2,random_stream,46);
 	// deallocating memory
 	free(random_stream);
 	// encrypt all with public key RSA sent by the server

@@ -81,9 +81,15 @@ int exchange_key(FILE* log_client, char * ciphersuite_to_use, char * premaster_s
 	}
 	else 
 		encrypt_secret_RSA(log_client, premaster_secret);
+	unsigned char * master_secret = calloc(48+1,sizeof(char));
+	compute_master_secret (master_secret, random_from_client, random_from_server, premaster_secret, "master secret");
+	  FILE * file = fopen("del.txt","w");
+	  for (int i = 0; i < 48; ++i)
+	  {
+	  	fprintf(file, "%c", master_secret[i]);
+	  }
+	  fclose(file);
 
-	//unsigned char * master_secret = calloc(48+1,sizeof(char));
-	//compute_master_secret (master_secret, random_from_client, random_from_server, premaster_secret, "master secret");
 	return 1;
 }
 
