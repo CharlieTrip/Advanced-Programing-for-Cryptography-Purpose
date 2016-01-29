@@ -82,13 +82,9 @@ int exchange_key(FILE* log_client, char * ciphersuite_to_use, char * premaster_s
 	else 
 		encrypt_secret_RSA(log_client, premaster_secret);
 
-	unsigned char * master_secret = calloc(48+1,sizeof(char));
-	compute_master_secret (master_secret, random_from_client, random_from_server, premaster_secret);
-	printf("Client: master_secret:   \n");
-	for(int i = 0; i<48; i++){
-		printf("%c",master_secret[i]);
-	}
-	printf("\n");
+	//unsigned char * master_secret = calloc(48+1,sizeof(char));
+	//compute_master_secret (master_secret, random_from_client, random_from_server, premaster_secret, "master secret");
+	return 1;
 }
 
 

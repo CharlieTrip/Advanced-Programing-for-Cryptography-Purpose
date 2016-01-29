@@ -11,7 +11,6 @@
 #include <openssl/x509.h>
 #include <openssl/x509_vfy.h>
 #include <openssl/x509v3.h>
-#include <openssl/kdf.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -291,7 +290,7 @@ int is_needed_keyexchange(char * ciphersuite_to_use){
 
 
 
-
+/*
 int compute_master_secret(unsigned char * master_secret, char * random_from_client, char * random_from_server, char * premaster_secret) {
 
   char label = malloc(78+1,sizeof(char));
@@ -323,8 +322,62 @@ int compute_master_secret(unsigned char * master_secret, char * random_from_clie
   }
   free(label);
   return 1;
+}*/
+
+int P_Hash_3round( const EVP_MD * evp_md, char * secret, int len_secret, char * text, int len_text, char * output){
+
+	/* This is just an function thougth for compute the master secret, *
+	 * So it has just 3 round and it return only 48 bytes and not 60   */
+
+	// Definitions
+	char * seed = calloc(20+len_text+1, sizeof(char));
+	char * step0 = calloc(20+1, sizeof(char));
+	char * step1 = calloc(20+1, sizeof(char));
+	char * step2 = calloc(20+1, sizeof(char));
+	// Creating the first seed
+	strcpy(seed, text); strcat(seed, text);
+	// first HMAC
+	step0 = (char *) HMAC(evp_md, secret, len_secret, (const unsigned char *) seed, len_text*2, NULL, NULL);
+	// Creating the second seed
+	memset(seed, 0, sizeof(char));
+	strcpy(seed,step0); strcat(seed, text);
+	// Second HMAC
+	step1 = (char *) HMAC(evp_md, secret, len_secret, (const unsigned char *) seed, len_text+20, NULL, NULL);
+	// Creating the tird seed
+	memset(seed, 0, sizeof(char));
+	strcpy(seed, step1); strcat(seed, text);
+	// Tird HMAC
+	step2 = (char *) HMAC(evp_md, secret, len_secret, (const unsigned char *) seed, len_text+20, NULL, NULL);
+	strcpy(output, step0); strcat(output, step1); strncat(output, step2, 8);
+	free(seed);
+	return 1;
 }
 
+
+
+
+
+
+int compute_master_secret(unsigned char * master_secret, char * random_from_client, char * random_from_server, char * premaster_secret, char * label) {
+
+	char * sha1_part = calloc(48+1, sizeof(char));
+	char * md5_part = calloc(48+1, sizeof(char)); 
+	char * seed = calloc(78+1, sizeof(char));
+	strcpy(seed, label); strcat(seed, random_from_client); strcat(seed, random_from_server);
+	char * S1 = calloc(128+1, sizeof(char));
+	char * S2 = calloc(128+1, sizeof(char));
+	strncpy(S1, premaster_secret, 128);
+	strncpy(S2, premaster_secret+128, 128);
+
+	P_Hash_3round( EVP_sha1(), S1, 128, seed, 77, sha1_part);
+	P_Hash_3round( EVP_md5(), S2, 128, seed, 77, md5_part);
+	
+	for(int i = 0; i<48; i++){
+		master_secret[i] = (char) sha1_part[i]^md5_part[i];
+	}
+	free(sha1_part); free(md5_part); free(seed); free(S1); free(S2);
+	return 1;
+}
 
 
 
