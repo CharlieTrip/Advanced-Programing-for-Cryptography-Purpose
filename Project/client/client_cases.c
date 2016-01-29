@@ -44,14 +44,18 @@ int encrypt_secret_RSA(FILE* log_client, char * premaster_secret){
 	fprintf(log_client, "\t");
 	// I need to send the encryption byteXbythe since there can be also \0 char
 	for(int i = 0; i<256; i++){
-		fprintf(log_client, "%c", encrypted_secret[i]);
-		fprintf(channel, "%c", encrypted_secret[i]);
+		fprintf(log_client, "%02x",(unsigned char) encrypted_secret[i]);
+		fprintf(channel, "%02x",(unsigned char) encrypted_secret[i]);
 	}
-	fprintf(log_client, "\n\n");		
+
+	FILE * file = fopen("premaster_secret_client.txt","w");
+	for (int i = 0; i < 48; ++i){
+	  	fprintf(file, "%02x", premaster_secret[i]);
+	}
+	fclose(file);
+
+	fprintf(log_client, "\n\n");	
 	fclose (channel);
 	free(encrypted_secret);
 	return 1;
 }
-
-
-

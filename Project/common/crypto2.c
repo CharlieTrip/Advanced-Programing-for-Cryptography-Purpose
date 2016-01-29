@@ -350,7 +350,7 @@ int P_Hash_3round( const EVP_MD * evp_md, char * secret, int len_secret, char * 
 	strcpy(seed, step1); strcat(seed, text);
 	// Tird HMAC
 	step2 = (char *) HMAC(evp_md, secret, len_secret, (const unsigned char *) seed, len_text+20, NULL, NULL);
-	strcpy(output, step0); strcat(output, step1); strncat(output, step2,8);
+	memcpy(output, step0, 20); memcpy(output +20, step1, 20); memcpy(output +40, step2,8);
 	free(seed);
 	return 1;
 }

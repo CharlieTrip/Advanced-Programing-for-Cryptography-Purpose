@@ -288,7 +288,15 @@ void get_random_block(char * message, char * random_block){
 }
 
 
+int hexToString(char * hexstring, char* charstring){
 
+    int tmp;
+    for (int i = 0; i < strlen(hexstring)/2; i++){
+    sscanf(&hexstring[i * 2], "%02x", &tmp);
+    charstring[i] = tmp;
+    }
+    return 1;
+}
 
 
 
