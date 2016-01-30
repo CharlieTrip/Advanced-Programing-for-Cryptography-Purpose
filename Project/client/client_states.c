@@ -12,9 +12,9 @@ void hello_client (FILE* log_client, char * random_from_client){
 	FILE* channel = fopen (link_channel,"w");
 	// Generate Random part
 	random_from_client = gen_rdm_bytestream (RANDOM_DIM_HELLO);
-	// Send Hello Client to the Server and save it in log_client
+	// Send Hello Client to the Server
 	send_message (channel, 6, TLS_VERSION, TLS_HANDSHAKE, TLS_CLIENTHELLO, random_from_client, TLS_RSA_RSA_SHA1, TLS_RSA_RSA_SHA2);
-	
+	// Save it in log_client
 	send_message (log_client, 7, sending, TLS_VERSION, TLS_HANDSHAKE, TLS_CLIENTHELLO, random_from_client, TLS_RSA_RSA_SHA1, TLS_RSA_RSA_SHA2);
 	fprintf(log_client, "\n\n");
 	fclose (channel);
@@ -81,14 +81,9 @@ int exchange_key(FILE* log_client, char * ciphersuite_to_use, char * premaster_s
 	}
 	else 
 		encrypt_secret_RSA(log_client, premaster_secret);
-	unsigned char * master_secret = calloc(48+1,sizeof(char));
-	compute_master_secret (master_secret, random_from_client, random_from_server, premaster_secret, "master secret");
-	FILE * file = fopen("master_secret.txt","w");
-	for (int i = 0; i < 48; ++i){
-	  	fprintf(file, "%c", master_secret[i]);
-	}
-	fclose(file);
 
+	//unsigned char * master_secret = calloc(48+1,sizeof(char));
+	//compute_master_secret (master_secret, random_from_client, random_from_server, premaster_secret, "master secret");
 	return 1;
 }
 

@@ -330,12 +330,10 @@ int P_Hash_3round( const EVP_MD * evp_md, char * secret, int len_secret, char * 
 	 * So it has just 3 round and it return only 48 bytes and not 60   */
 
 	// Definitions
-  unsigned int result_len = 20;
-  static char res_hexstring[40];
 	char * seed = calloc(20+len_text+1, sizeof(char));
-	char * step0;
-	char * step1;
-	char * step2;
+	char * step0 = calloc(20+1, sizeof(char));
+	char * step1 = calloc(20+1, sizeof(char));
+	char * step2 = calloc(20+1, sizeof(char));
 	// Creating the first seed
 	strcpy(seed, text); strcat(seed, text);
 	// first HMAC
@@ -350,7 +348,7 @@ int P_Hash_3round( const EVP_MD * evp_md, char * secret, int len_secret, char * 
 	strcpy(seed, step1); strcat(seed, text);
 	// Tird HMAC
 	step2 = (char *) HMAC(evp_md, secret, len_secret, (const unsigned char *) seed, len_text+20, NULL, NULL);
-	memcpy(output, step0, 20); memcpy(output +20, step1, 20); memcpy(output +40, step2,8);
+	strcpy(output, step0); strcat(output, step1); strncat(output, step2, 8);
 	free(seed);
 	return 1;
 }
@@ -366,13 +364,13 @@ int compute_master_secret(unsigned char * master_secret, char * random_from_clie
 	char * md5_part = calloc(48+1, sizeof(char)); 
 	char * seed = calloc(78+1, sizeof(char));
 	strcpy(seed, label); strcat(seed, random_from_client); strcat(seed, random_from_server);
-	char * S1 = calloc(24+1, sizeof(char));
-	char * S2 = calloc(24+1, sizeof(char));
-  memcpy(S1, premaster_secret, 24);
-  memcpy(S2, premaster_secret+24, 24);
+	char * S1 = calloc(128+1, sizeof(char));
+	char * S2 = calloc(128+1, sizeof(char));
+	strncpy(S1, premaster_secret, 128);
+	strncpy(S2, premaster_secret+128, 128);
 
-	P_Hash_3round( EVP_sha1(), S1, 24, seed, 77, sha1_part);
-	P_Hash_3round( EVP_md5(), S2, 24, seed, 77, md5_part);
+	P_Hash_3round( EVP_sha1(), S1, 128, seed, 77, sha1_part);
+	P_Hash_3round( EVP_md5(), S2, 128, seed, 77, md5_part);
 	
 	for(int i = 0; i<48; i++){
 		master_secret[i] = (char) sha1_part[i]^md5_part[i];
