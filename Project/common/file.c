@@ -173,10 +173,11 @@ int send_message (FILE* channel, int number_of_strings,...){
 
 
 
-int gen_rdm_bytestream(size_t num_bytes, char * stream){
+int gen_rdm_bytestream(size_t num_bytes, char * stream, unsigned char * hexstring){
 
     /* Return a pointer to a string of random bytes  *
-     * of a num_bytes length in byte                 */
+     * of a num_bytes length in byte                 *
+     * NOTE: hexstring can be also NULL              */
 
     int byte_count = 1;
     char data[1];
@@ -186,9 +187,14 @@ int gen_rdm_bytestream(size_t num_bytes, char * stream){
     srand((int) data);
     
     for (int i = 0; i < num_bytes; i++){
-        stream[i] = 50+(rand () % 50);
+        stream[i] = (rand ());
     }
-    stream[num_bytes+1] = '\0';
+
+    if(hexstring != NULL){
+        for (int i = 0; i < num_bytes; ++i){
+            sprintf((char*) &hexstring[i*2],"%02x", (unsigned char) stream[i]);
+        }
+    }
     return 1;
 }
 
@@ -285,6 +291,18 @@ void get_random_block(char * message, char * random_block){
     }
 }
 
+
+
+int hexToString(char * hexstring, char* charstring){
+
+    int tmp;
+    for (int i = 0; i < strlen(hexstring)/2; i++){
+    sscanf(&hexstring[i * 2], "%02x", &tmp);
+    charstring[i] = tmp;
+    }
+    charstring[(strlen(hexstring)/2)+1] = 0;
+    return 1;
+}
 
 
 

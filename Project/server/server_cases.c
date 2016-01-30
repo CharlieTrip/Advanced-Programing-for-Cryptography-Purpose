@@ -16,6 +16,7 @@ const int DIM_MASTER_SECRET = 48;
 
 int decrypt_secret_RSA(FILE * log_server, char * premaster_secret){
 
+	char * converted_enc_pm_secret = calloc(BUF_SIZE,sizeof(char));
 	char * encrypted_pm_secret = calloc(BUF_SIZE,sizeof(char));
 	char * received_message = calloc(BUF_SIZE+1,sizeof(char));
 	FILE* channel = fopen (link_channel,"r");
@@ -24,16 +25,22 @@ int decrypt_secret_RSA(FILE * log_server, char * premaster_secret){
 	fclose (channel);
 	// Save message in log_server
 	fprintf(log_server, "%s\t", receiving);
-	for(int i = 0; i<(265+6); i++){
+	for(int i = 0; i<(512+3+6); i++){
 		fprintf(log_server, "%c", received_message[i]);
 	}
 	fprintf(log_server, "\n\n");
 	// extact the encrypted premaster_secret
 	encrypted_pm_secret = get_nth_block(received_message,PREMAS_SECRET_POSITION);
+	
+	hexToString(encrypted_pm_secret, converted_enc_pm_secret);
+	
 	// Decrypt
-	if(-1 == TLS_RSA_private_decrypt((unsigned char *) encrypted_pm_secret,256,link_prvkey, (unsigned char *) premaster_secret)){
+	if(-1 == TLS_RSA_private_decrypt((unsigned char *) converted_enc_pm_secret, 256,link_prvkey, (unsigned char *) premaster_secret)){
 		printf("SERVER: Private Decrypt failed ");
 	}
 	//free(received_message); NON GLI PIACE IL FREE
 	return 1;
 }
+
+
+

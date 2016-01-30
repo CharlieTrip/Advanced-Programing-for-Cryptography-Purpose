@@ -22,7 +22,7 @@ int encrypt_secret_RSA(FILE* log_client, char * premaster_secret){
 	char * random_stream = calloc(RANDOM_DIM_KEY_EXCHANGE+1,sizeof(char));
 	char * encrypted_secret = calloc(BUF_SIZE+1,sizeof(char));
 	// get random part of the premaster_secret
-	gen_rdm_bytestream(RANDOM_DIM_KEY_EXCHANGE, random_stream);
+	gen_rdm_bytestream(RANDOM_DIM_KEY_EXCHANGE, random_stream, NULL);
 	// copy TLS version to the head of the premaster_secret
 	strcpy(premaster_secret,TLS_VERSION);
 	// add the random part previously obtained to the premaster_secret
@@ -45,8 +45,8 @@ int encrypt_secret_RSA(FILE* log_client, char * premaster_secret){
 	fprintf(log_client, "\t");
 	// I need to send the encryption byteXbythe since there can be also \0 char
 	for(int i = 0; i<256; i++){
-		fprintf(log_client, "%c", encrypted_secret[i]);
-		fprintf(channel, "%c", encrypted_secret[i]);
+		fprintf(log_client, "%02x",(unsigned char) encrypted_secret[i]);
+		fprintf(channel, "%02x",(unsigned char) encrypted_secret[i]);
 	}
 	fprintf(log_client, "\n\n");		
 	fclose (channel);

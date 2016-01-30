@@ -11,6 +11,8 @@ void hello_server (FILE* log_server, char * ciphersuites_to_use, char * random_f
 
 	/* for the moment we suppose the client can use all 4 types of protocol */
 
+	unsigned char * hexRandomClient = calloc(2*RANDOM_DIM_HELLO+1, sizeof(char));
+	unsigned char * hexRandomServer = calloc(2*RANDOM_DIM_HELLO+1, sizeof(char));
 	FILE* channel = fopen(link_channel,"r");
 	char * received_message = calloc(BUF_SIZE+1,sizeof(char));
 	// Read data from channel
@@ -19,19 +21,23 @@ void hello_server (FILE* log_server, char * ciphersuites_to_use, char * random_f
 	// Save it in log_server
 	send_message (log_server, 2, receiving, received_message);
 	fprintf(log_server, "\n\n");
-	// Get the random from the client
-	get_random_block(received_message,random_from_client);
+	// Get the random from the client which is in position 4
+	hexRandomClient = (unsigned char *) get_nth_block(received_message, 4);
+	// Convert from hex	
+	hexToString((char *) hexRandomClient, random_from_client);
 	// Chose the best ciphersuite avilable
-	chose_best_ciphersuite (received_message, ciphersuites_to_use);
+	choose_best_ciphersuite (received_message, ciphersuites_to_use);
 	// Generate Random part
-	gen_rdm_bytestream(RANDOM_DIM_HELLO, random_from_server);
+	gen_rdm_bytestream(RANDOM_DIM_HELLO, random_from_server, hexRandomServer);
 	// Send Hello Server to the Client
 	channel = fopen(link_channel,"w");
-	send_message (channel, 5, TLS_VERSION, TLS_HANDSHAKE, TLS_SERVERHELLO, random_from_server, ciphersuites_to_use);
+	send_message (channel, 5, TLS_VERSION, TLS_HANDSHAKE, TLS_SERVERHELLO, hexRandomServer, ciphersuites_to_use);
 	// Save it in log_server
-	send_message (log_server, 6, sending, TLS_VERSION, TLS_HANDSHAKE, TLS_SERVERHELLO, random_from_server, ciphersuites_to_use);
+	send_message (log_server, 6, sending, TLS_VERSION, TLS_HANDSHAKE, TLS_SERVERHELLO, hexRandomServer, ciphersuites_to_use);
 	fprintf(log_server, "\n\n");
 	fclose(channel);
+	//free(hexRandomClient);
+	free(hexRandomServer);
 	free(received_message);
 }
 
@@ -77,15 +83,10 @@ int receive_exchange_key(FILE * log_server, char * ciphersuite_to_use, unsigned 
 		// Da implementare 
 	} 
 
-	compute_master_secret (master_secret, random_from_client, random_from_server, premaster_secret, "master secret");
-	
-	FILE * file = fopen("server_master.txt","w");	
-	fprintf(file, "%s \n\n\n %s \n\n\n",random_from_client, random_from_server);
-	
-	for (int i = 0; i < 48; ++i){
-		fprintf(file, "%02x",(unsigned char) master_secret[i]);
+	if(!compute_master_secret (master_secret, random_from_client, random_from_server, premaster_secret, "master secret")){
+		//printf("SERVER: ERROR computing master_secret\n");
+		return 0;
 	}
-	fclose(file);
 	return 1;
 }
 

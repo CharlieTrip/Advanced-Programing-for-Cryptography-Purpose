@@ -147,16 +147,16 @@ int get_pubkey(const char * pubkey_filestr, const char * cert_filestr) {
 
 
 
-void chose_best_ciphersuite(char * message, char * best_chipersuite){
+void choose_best_ciphersuite(char * message, char * best_chipersuite){
 
-  int n_ciphersuite = get_n_of_blocks(message)-3;
-  int ciphersuites[n_ciphersuite];
+  int n_ciphersuites = get_n_of_blocks(message)-3;
+  int ciphersuites[n_ciphersuites];
   int best;
-  for (int i = 0; i < n_ciphersuite; ++i){
-    ciphersuites[i] = atoi(get_nth_block(message,4+i));
+  for (int i = 0; i < n_ciphersuites; ++i){
+    ciphersuites[i] = atoi(get_nth_block(message,5+i));
   }
   best = ciphersuites[0];
-  for (int i = 1; i < n_ciphersuite; ++i)
+  for (int i = 1; i < n_ciphersuites; ++i)
   {
     if (best<ciphersuites[i]){
       best = ciphersuites[i];
@@ -292,98 +292,67 @@ int is_needed_keyexchange(char * ciphersuite_to_use){
 }
 
 
-
-/*
-int compute_master_secret(unsigned char * master_secret, char * random_from_client, char * random_from_server, char * premaster_secret) {
-
-  char label = malloc(78+1,sizeof(char));
-  strcpy(label,"master secret");
-  strncat(label,random_from_client,32);
-  strncat(label,random_from_server,32);
-  EVP_PKEY_CTX *pctx;
-  size_t outlen = sizeof(master_secret);
-  pctx = EVP_PKEY_CTX_new_id(EVP_PKEY_TLS1_PRF, NULL);
-  if (EVP_PKEY_derive_init(pctx) <= 0){
-    return 0;
-    printf("Error computing master key\n");
-  }
-  if (EVP_PKEY_CTX_set_tls1_prf_md(pctx, EVP_md5_sha1()) <= 0){
-    return 0;
-    printf("Error computing master key\n");
-  }
-  if (EVP_PKEY_CTX_set1_tls1_prf_secret(pctx, premaster_secret, 256) <= 0){
-    return 0;
-    printf("Error computing master key\n");
-  }
-  if (EVP_PKEY_CTX_add1_tls1_prf_seed(pctx, label, 78) <= 0){
-    return 0;
-    printf("Error computing master key\n");
-  }
-  if (EVP_PKEY_derive(pctx, master_secret, &outlen) <= 0){
-    return 0;
-    printf("Error computing master key\n");
-  }
-  free(label);
-  return 1;
-}*/
-
 int P_Hash_3round( const EVP_MD * evp_md, char * secret, int len_secret, char * text, int len_text, char * output,  int sha_len){
 
   /* This is just an function thougth for compute the master secret, *
    * So it has just 3 round and it return only 48 bytes and not 60   */
 
   // Definitions
-  char * seed = calloc(len_text*2+1, sizeof(char));
-  char * step0;
-  char * step1;
-  char * step2;
+  char * seed0 = calloc(len_text*2, sizeof(char));
+  char * seed1 = calloc(len_text+sha_len, sizeof(char));
+  char * seed2 = calloc(len_text+sha_len, sizeof(char));
+  char * step0 = calloc(sha_len, sizeof(char));
+  char * step1 = calloc(sha_len, sizeof(char));
+  char * step2 = calloc(sha_len, sizeof(char));
   // Creating the first seed
-  strncpy(seed, text, len_text); strncat(seed, text, len_text);
+  strncpy(seed0, text, len_text); strncat(seed0, text, len_text);
   // compute first HMAC and copy it into output
-  step0 = (char *) HMAC(evp_md, secret, len_secret, (const unsigned char *) seed, len_text*2, NULL, NULL);
+  step0 = (char *) HMAC(evp_md, secret, len_secret, (const unsigned char *) seed0, strlen(seed0), NULL, NULL);
   strncpy(output, step0, sha_len);
   // Creating the second seed
-  free(seed); seed = calloc(20+len_text+1, sizeof(char));
-  strcpy(seed,step0); strcat(seed, text);
+  strncpy(seed1,step0,sha_len); strncat(seed1, text, len_text);
   // compute second HMAC and copy it into output
-  step1 = (char *) HMAC(evp_md, secret, len_secret, (const unsigned char *) seed, len_text+sha_len, NULL, NULL);
+  step1 = (char *) HMAC(evp_md, secret, len_secret, (const unsigned char *) seed1, len_text+sha_len, NULL, NULL);
   strncat(output +sha_len, step1, sha_len);
   // Creating the tird seed
-  free(seed); seed = calloc(20+len_text+1, sizeof(char));
-  strcpy(seed, step1); strcat(seed, text);
+  strncpy(seed2, step1,sha_len); strncat(seed2, text, len_text);
   // compute tird HMAC and copy it into output
-  step2 = (char *) HMAC(evp_md, secret, len_secret, (const unsigned char *) seed, len_text+sha_len, NULL, NULL);
+  step2 = (char *) HMAC(evp_md, secret, len_secret, (const unsigned char *) seed2, len_text+sha_len, NULL, NULL);
   strncat(output +sha_len*2, step2, sha_len);
-  free(seed);
-  return 1;
+  free(seed0); free(seed1); free(seed2);
+  // TODO mettere una condizione che verifica se c'è stato un errore di computazione
+    return 1;
 }
-
-
-
 
 
 
 int compute_master_secret(unsigned char * master_secret, char * random_from_client, char * random_from_server, char * premaster_secret, char * label) {
 
-	char * sha1_part = calloc(len_sha1*3+1, sizeof(char));
-	char * md5_part = calloc(len_md5*3+1, sizeof(char)); 
-	char * seed = calloc(78+1, sizeof(char));
-	strcpy(seed, label); strcat(seed, random_from_client); strcat(seed, random_from_server);
-	char * S1 = calloc(128+1, sizeof(char));
-	char * S2 = calloc(128+1, sizeof(char));
-	strncpy(S1, premaster_secret, 128);
-	strncpy(S2, premaster_secret+128, 128);
+	char * sha1_part = calloc(len_sha1*3, sizeof(char));
+	char * md5_part = calloc(len_md5*3, sizeof(char)); 
+	char * seedsha = calloc(77, sizeof(char));
+	strncpy(seedsha, label,strlen(label)); strncat(seedsha, random_from_client,32); strncat(seedsha, random_from_server,32);
+  char * seedmd5 = calloc(77, sizeof(char));
+  memcpy(seedmd5,seedsha,77);
+	char * S1 = calloc(24, sizeof(char));
+	char * S2 = calloc(24, sizeof(char));
+	strncpy(S1, premaster_secret, 24);
+	strncpy(S2, premaster_secret+24, 24);
+
   // compute the two's hmac
-	P_Hash_3round( EVP_sha1(), S1, 128, seed, 77, sha1_part, len_sha1);
-	P_Hash_3round( EVP_md5(), S2, 128, seed, 77, md5_part, len_md5);
+	if (!P_Hash_3round( EVP_sha1(), S1, 24, seedsha, 77, sha1_part, len_sha1)){
+    return 0;
+  }
+	if (!P_Hash_3round( EVP_md5(), S2, 24, seedmd5, 77, md5_part, len_md5)){
+    return 0;
+  }
 	// Perform the XOR between the two's
 	for(int i = 0; i<48; i++){
 		master_secret[i] = (char) sha1_part[i]^md5_part[i];
 	}
-	free(sha1_part); free(md5_part); free(seed); free(S1); free(S2);
+	//free(sha1_part); free(md5_part); free(seed); free(S1); free(S2);
 	return 1;
 }
-
 
 
 

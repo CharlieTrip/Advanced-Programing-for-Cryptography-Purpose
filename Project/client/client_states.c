@@ -10,19 +10,22 @@ void hello_client (FILE* log_client, char * random_from_client){
 	/* for the moment we suppose the client can't use all 4 types of ciphersuite */
 
 	FILE* channel = fopen (link_channel,"w");
+	unsigned char * hexrandom = calloc(2*RANDOM_DIM_HELLO+1, sizeof(char));
 	// Generate Random part
-	gen_rdm_bytestream (RANDOM_DIM_HELLO, random_from_client);
+	gen_rdm_bytestream (RANDOM_DIM_HELLO, random_from_client, hexrandom);
 	// Send Hello Client to the Server
-	send_message (channel, 6, TLS_VERSION, TLS_HANDSHAKE, TLS_CLIENTHELLO, random_from_client, TLS_RSA_RSA_SHA1, TLS_RSA_RSA_SHA2);
+	send_message (channel, 6, TLS_VERSION, TLS_HANDSHAKE, TLS_CLIENTHELLO, hexrandom, TLS_RSA_RSA_SHA1, TLS_RSA_RSA_SHA2);
 	// Save it in log_client
-	send_message (log_client, 7, sending, TLS_VERSION, TLS_HANDSHAKE, TLS_CLIENTHELLO, random_from_client, TLS_RSA_RSA_SHA1, TLS_RSA_RSA_SHA2);
+	send_message (log_client, 7, sending, TLS_VERSION, TLS_HANDSHAKE, TLS_CLIENTHELLO, hexrandom, TLS_RSA_RSA_SHA1, TLS_RSA_RSA_SHA2);
 	fprintf(log_client, "\n\n");
 	fclose (channel);
+	free(hexrandom);
 }
 
 
 void receive_hello_server (FILE* log_client, char * ciphersuite_to_use, char * random_from_server){
 
+	unsigned char * hexRandomServer = calloc(2*RANDOM_DIM_HELLO+1, sizeof(char));
 	char * received_message = calloc(BUF_SIZE+1,sizeof(char));
 	FILE* channel = fopen (link_channel,"r");
 	// Read data from channel
@@ -32,9 +35,11 @@ void receive_hello_server (FILE* log_client, char * ciphersuite_to_use, char * r
 	send_message (log_client, 2, receiving, received_message);
 	fprintf(log_client, "\n\n");
 	// Get the random from the client
-	get_random_block(received_message,random_from_server);
+	hexRandomServer = (unsigned char*) get_nth_block(received_message, 4);
+	hexToString((char*) hexRandomServer, random_from_server);
 	// Get the ciphersuite to use (choosed by the server)
 	sprintf (ciphersuite_to_use, "%s", get_nth_block(received_message,CIPHERSUITE_TO_USE_POSITION));
+	//free(hexRandomServer);
 }
 
 
@@ -76,23 +81,15 @@ int exchange_key(FILE* log_client, char * ciphersuite_to_use, unsigned char * ma
 	free(received_message);
 	if ( !(atoi(ciphersuite_to_use) == atoi(TLS_RSA_RSA_SHA1) || atoi(ciphersuite_to_use) == atoi(TLS_RSA_RSA_SHA2))){
 			//DEVO CAPIRE ANCORA BENE COSA FARE CON TLS_DH_RSA
-		printf("CLIENT: error computing RSA");
-		return 0;
+		//
 	}
 	else 
 		encrypt_secret_RSA(log_client, premaster_secret);
 
-	compute_master_secret (master_secret, random_from_client, random_from_server, premaster_secret, "master secret");
-	
-	FILE * file = fopen("client_master.txt","w");
-
-
-	fprintf(file, "%s \n\n\n %s \n\n\n",random_from_client, random_from_server);
-	for (int i = 0; i < 48; ++i)
-	{
-		fprintf(file, "%02x",(unsigned char) master_secret[i]);
+	if(!compute_master_secret (master_secret, random_from_client, random_from_server, premaster_secret, "master secret")){
+		//printf("CLIENT: ERROR computing master_secret\n");
+		return 0;
 	}
-	fclose(file);
 	return 1;
 }
 
