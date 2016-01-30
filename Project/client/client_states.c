@@ -7,11 +7,11 @@
 
 void hello_client (FILE* log_client, char * random_from_client){
 
-	/* for the moment we suppose the client can use all 4 types of ciphersuite */
+	/* for the moment we suppose the client can't use all 4 types of ciphersuite */
 
 	FILE* channel = fopen (link_channel,"w");
 	// Generate Random part
-	random_from_client = gen_rdm_bytestream (RANDOM_DIM_HELLO);
+	gen_rdm_bytestream (RANDOM_DIM_HELLO, random_from_client);
 	// Send Hello Client to the Server
 	send_message (channel, 6, TLS_VERSION, TLS_HANDSHAKE, TLS_CLIENTHELLO, random_from_client, TLS_RSA_RSA_SHA1, TLS_RSA_RSA_SHA2);
 	// Save it in log_client
@@ -63,7 +63,7 @@ void receive_certificate (FILE* log_client){
 
 
 
-int exchange_key(FILE* log_client, char * ciphersuite_to_use, char * premaster_secret, char * random_from_client, char * random_from_server){
+int exchange_key(FILE* log_client, char * ciphersuite_to_use, unsigned char * master_secret, char * premaster_secret, char * random_from_client, char * random_from_server){
 
 	char * received_message = calloc(BUF_SIZE+1,sizeof(char));
 	FILE* channel = fopen (link_channel,"r");
@@ -82,8 +82,17 @@ int exchange_key(FILE* log_client, char * ciphersuite_to_use, char * premaster_s
 	else 
 		encrypt_secret_RSA(log_client, premaster_secret);
 
-	//unsigned char * master_secret = calloc(48+1,sizeof(char));
-	//compute_master_secret (master_secret, random_from_client, random_from_server, premaster_secret, "master secret");
+	compute_master_secret (master_secret, random_from_client, random_from_server, premaster_secret, "master secret");
+	
+	FILE * file = fopen("client_master.txt","w");
+
+
+	fprintf(file, "%s \n\n\n %s \n\n\n",random_from_client, random_from_server);
+	for (int i = 0; i < 48; ++i)
+	{
+		fprintf(file, "%02x",(unsigned char) master_secret[i]);
+	}
+	fclose(file);
 	return 1;
 }
 

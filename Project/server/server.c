@@ -14,6 +14,7 @@ int main(){
 	char * random_from_server = calloc(RANDOM_DIM_HELLO+1, sizeof(char));
 	char * random_from_client = calloc(RANDOM_DIM_HELLO+1, sizeof(char));
 	char * premaster_secret = calloc(BUF_SIZE,sizeof(char));
+	unsigned char * master_secret = calloc(DIM_MASTER_SECRET+1, sizeof(char));
 
 	log_server = fopen("./server/log_server.txt","w");
 
@@ -56,7 +57,7 @@ int main(){
 				state++;
 			}
 			else if(state == 4){
-				receive_exchange_key(log_server, ciphersuite_to_use, premaster_secret);
+				receive_exchange_key(log_server, ciphersuite_to_use, master_secret, premaster_secret, random_from_client, random_from_server);
 				printf("Server: receiving client_exchange_key\n"); // to delete
 				state++;
 			}

@@ -13,6 +13,7 @@ const int RANDOM_DIM_HELLO = 32;
 const int RANDOM_DIM_KEY_EXCHANGE = 46;
 const int CIPHERSUITE_TO_USE_POSITION = 5;
 const int CERTIFICATE_POSITION = 4;
+const int DIM_MASTER_SECRET = 48;
 
 
 
@@ -21,7 +22,7 @@ int encrypt_secret_RSA(FILE* log_client, char * premaster_secret){
 	char * random_stream = calloc(RANDOM_DIM_KEY_EXCHANGE+1,sizeof(char));
 	char * encrypted_secret = calloc(BUF_SIZE+1,sizeof(char));
 	// get random part of the premaster_secret
-	random_stream = gen_rdm_bytestream(RANDOM_DIM_KEY_EXCHANGE);
+	gen_rdm_bytestream(RANDOM_DIM_KEY_EXCHANGE, random_stream);
 	// copy TLS version to the head of the premaster_secret
 	strcpy(premaster_secret,TLS_VERSION);
 	// add the random part previously obtained to the premaster_secret

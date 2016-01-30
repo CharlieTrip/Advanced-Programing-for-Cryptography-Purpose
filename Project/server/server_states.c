@@ -24,7 +24,7 @@ void hello_server (FILE* log_server, char * ciphersuites_to_use, char * random_f
 	// Chose the best ciphersuite avilable
 	chose_best_ciphersuite (received_message, ciphersuites_to_use);
 	// Generate Random part
-	random_from_server = gen_rdm_bytestream(RANDOM_DIM_HELLO);
+	gen_rdm_bytestream(RANDOM_DIM_HELLO, random_from_server);
 	// Send Hello Server to the Client
 	channel = fopen(link_channel,"w");
 	send_message (channel, 5, TLS_VERSION, TLS_HANDSHAKE, TLS_SERVERHELLO, random_from_server, ciphersuites_to_use);
@@ -67,14 +67,26 @@ int hello_done(FILE* log_server){
 
 
 
-int receive_exchange_key(FILE * log_server, char * ciphersuite_to_use, char * premaster_secret){
+int receive_exchange_key(FILE * log_server, char * ciphersuite_to_use, unsigned char * master_secret, char * premaster_secret, char * random_from_client, char * random_from_server){
 
 	if (atoi(ciphersuite_to_use) == atoi(TLS_RSA_RSA_SHA1) || atoi(ciphersuite_to_use) == atoi(TLS_RSA_RSA_SHA2)){
 			//DEVO CAPIRE ANCORA BENE COSA FARE CON TLS_DH_RSA
-		return decrypt_secret_RSA(log_server, premaster_secret);
+		decrypt_secret_RSA(log_server, premaster_secret);
 	}
-	else 
-		return 0;
+	else{
+		// Da implementare 
+	} 
+
+	compute_master_secret (master_secret, random_from_client, random_from_server, premaster_secret, "master secret");
+	
+	FILE * file = fopen("server_master.txt","w");	
+	fprintf(file, "%s \n\n\n %s \n\n\n",random_from_client, random_from_server);
+	
+	for (int i = 0; i < 48; ++i){
+		fprintf(file, "%02x",(unsigned char) master_secret[i]);
+	}
+	fclose(file);
+	return 1;
 }
 
 

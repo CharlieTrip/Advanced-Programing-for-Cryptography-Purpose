@@ -16,6 +16,9 @@
 #include <string.h>
 #include <openssl/engine.h>
 
+const int len_sha1 = 20;
+const int len_md5 = 16;
+
 
 char * X509_to_string(X509 *cert) {
 
@@ -324,33 +327,35 @@ int compute_master_secret(unsigned char * master_secret, char * random_from_clie
   return 1;
 }*/
 
-int P_Hash_3round( const EVP_MD * evp_md, char * secret, int len_secret, char * text, int len_text, char * output){
+int P_Hash_3round( const EVP_MD * evp_md, char * secret, int len_secret, char * text, int len_text, char * output,  int sha_len){
 
-	/* This is just an function thougth for compute the master secret, *
-	 * So it has just 3 round and it return only 48 bytes and not 60   */
+  /* This is just an function thougth for compute the master secret, *
+   * So it has just 3 round and it return only 48 bytes and not 60   */
 
-	// Definitions
-	char * seed = calloc(20+len_text+1, sizeof(char));
-	char * step0 = calloc(20+1, sizeof(char));
-	char * step1 = calloc(20+1, sizeof(char));
-	char * step2 = calloc(20+1, sizeof(char));
-	// Creating the first seed
-	strcpy(seed, text); strcat(seed, text);
-	// first HMAC
-	step0 = (char *) HMAC(evp_md, secret, len_secret, (const unsigned char *) seed, len_text*2, NULL, NULL);
-	// Creating the second seed
-	memset(seed, 0, sizeof(char));
-	strcpy(seed,step0); strcat(seed, text);
-	// Second HMAC
-	step1 = (char *) HMAC(evp_md, secret, len_secret, (const unsigned char *) seed, len_text+20, NULL, NULL);
-	// Creating the tird seed
-	memset(seed, 0, sizeof(char));
-	strcpy(seed, step1); strcat(seed, text);
-	// Tird HMAC
-	step2 = (char *) HMAC(evp_md, secret, len_secret, (const unsigned char *) seed, len_text+20, NULL, NULL);
-	strcpy(output, step0); strcat(output, step1); strncat(output, step2, 8);
-	free(seed);
-	return 1;
+  // Definitions
+  char * seed = calloc(len_text*2+1, sizeof(char));
+  char * step0;
+  char * step1;
+  char * step2;
+  // Creating the first seed
+  strncpy(seed, text, len_text); strncat(seed, text, len_text);
+  // compute first HMAC and copy it into output
+  step0 = (char *) HMAC(evp_md, secret, len_secret, (const unsigned char *) seed, len_text*2, NULL, NULL);
+  strncpy(output, step0, sha_len);
+  // Creating the second seed
+  free(seed); seed = calloc(20+len_text+1, sizeof(char));
+  strcpy(seed,step0); strcat(seed, text);
+  // compute second HMAC and copy it into output
+  step1 = (char *) HMAC(evp_md, secret, len_secret, (const unsigned char *) seed, len_text+sha_len, NULL, NULL);
+  strncat(output +sha_len, step1, sha_len);
+  // Creating the tird seed
+  free(seed); seed = calloc(20+len_text+1, sizeof(char));
+  strcpy(seed, step1); strcat(seed, text);
+  // compute tird HMAC and copy it into output
+  step2 = (char *) HMAC(evp_md, secret, len_secret, (const unsigned char *) seed, len_text+sha_len, NULL, NULL);
+  strncat(output +sha_len*2, step2, sha_len);
+  free(seed);
+  return 1;
 }
 
 
@@ -360,18 +365,18 @@ int P_Hash_3round( const EVP_MD * evp_md, char * secret, int len_secret, char * 
 
 int compute_master_secret(unsigned char * master_secret, char * random_from_client, char * random_from_server, char * premaster_secret, char * label) {
 
-	char * sha1_part = calloc(48+1, sizeof(char));
-	char * md5_part = calloc(48+1, sizeof(char)); 
+	char * sha1_part = calloc(len_sha1*3+1, sizeof(char));
+	char * md5_part = calloc(len_md5*3+1, sizeof(char)); 
 	char * seed = calloc(78+1, sizeof(char));
 	strcpy(seed, label); strcat(seed, random_from_client); strcat(seed, random_from_server);
 	char * S1 = calloc(128+1, sizeof(char));
 	char * S2 = calloc(128+1, sizeof(char));
 	strncpy(S1, premaster_secret, 128);
 	strncpy(S2, premaster_secret+128, 128);
-
-	P_Hash_3round( EVP_sha1(), S1, 128, seed, 77, sha1_part);
-	P_Hash_3round( EVP_md5(), S2, 128, seed, 77, md5_part);
-	
+  // compute the two's hmac
+	P_Hash_3round( EVP_sha1(), S1, 128, seed, 77, sha1_part, len_sha1);
+	P_Hash_3round( EVP_md5(), S2, 128, seed, 77, md5_part, len_md5);
+	// Perform the XOR between the two's
 	for(int i = 0; i<48; i++){
 		master_secret[i] = (char) sha1_part[i]^md5_part[i];
 	}

@@ -11,6 +11,7 @@ const char * link_prvkey = "./server/RSA_privkey.pem";
 const int RANDOM_DIM_HELLO = 32;
 const int RANDOM_DIM_KEY_EXCHANGE = 46;
 const int PREMAS_SECRET_POSITION = 4;
+const int DIM_MASTER_SECRET = 48;
 
 
 int decrypt_secret_RSA(FILE * log_server, char * premaster_secret){

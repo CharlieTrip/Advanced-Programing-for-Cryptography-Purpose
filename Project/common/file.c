@@ -173,14 +173,13 @@ int send_message (FILE* channel, int number_of_strings,...){
 
 
 
-char * gen_rdm_bytestream(size_t num_bytes){
+int gen_rdm_bytestream(size_t num_bytes, char * stream){
 
     /* Return a pointer to a string of random bytes  *
      * of a num_bytes length in byte                 */
 
     int byte_count = 1;
     char data[1];
-    char *stream = calloc (num_bytes+1,sizeof(char));
     FILE *fp = fopen("/dev/urandom", "r");
     fread(&data, 1, byte_count, fp);
     fclose(fp);
@@ -190,9 +189,8 @@ char * gen_rdm_bytestream(size_t num_bytes){
         stream[i] = 50+(rand () % 50);
     }
     stream[num_bytes+1] = '\0';
-    return stream;
+    return 1;
 }
-
 
 
 

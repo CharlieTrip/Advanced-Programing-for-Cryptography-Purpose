@@ -14,6 +14,7 @@ int main(){
 	char * random_from_server = calloc(RANDOM_DIM_HELLO+1, sizeof(char));
 	char * random_from_client = calloc(RANDOM_DIM_HELLO+1, sizeof(char));
 	char * premaster_secret = calloc(2+RANDOM_DIM_KEY_EXCHANGE+1,sizeof(char));
+	unsigned char * master_secret = calloc(DIM_MASTER_SECRET+1, sizeof(char));
 	log_client = fopen("./client/log_client.txt","w");
 
 	int state = 0;
@@ -63,7 +64,7 @@ int main(){
 				state++;
 			}
 			else if(state == 4){
-				exchange_key(log_client, ciphersuite_to_use, premaster_secret, random_from_client, random_from_server);
+				exchange_key(log_client, ciphersuite_to_use, master_secret, premaster_secret, random_from_client, random_from_server);
 				printf("Client: exchange_key\n"); // to delete
 				state++; // here we need to see if the client has to to the change cipher,
 						 // maybe with a function like "is_needed_change_cipher",
