@@ -18,13 +18,11 @@
 // just the last one has the hmac control using the shared secret as key.
 
 
-const char TLS_DH_RSA_SHA1[3] = "10\0";
-const char TLS_DH_RSA_SHA2[3] = "11\0";
-const char TLS_RSA_RSA_SHA1[3] = "12\0";
-const char TLS_RSA_RSA_SHA2[3] = "13\0";
-const char TLS_RSA_RSA_MD5[3] = "14\0";
-
-
+const char TLS_DHE_DSS_WITH_SHA256[3] = "10\0";
+const char TLS_DHE_RSA_WITH_SHA256[3] = "11\0";
+const char TLS_RSA_WITH_SHA256[3] = "12\0";
+const char TLS_ECDHE_DSS_WITH_SHA256[3] = "13\0";
+const char TLS_ECDHE_RSA_WITH_SHA256[3] = "14\0";
 
 
 // 

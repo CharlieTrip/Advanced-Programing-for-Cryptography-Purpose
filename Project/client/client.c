@@ -15,7 +15,7 @@ int main(){
 	char * random_from_client = calloc(RANDOM_DIM_HELLO+1, sizeof(char));
 	char * premaster_secret = calloc(2+RANDOM_DIM_KEY_EXCHANGE+1,sizeof(char));
 	unsigned char * master_secret = calloc(DIM_MASTER_SECRET+1, sizeof(char));
-	log_client = fopen("./client/log_client.txt","w");
+	log_client = fopen("./client/log_client.txt","a+");
 
 	int state = 0;
 	/* The variable 'state'indicates the state of the client, i.e.
@@ -71,10 +71,27 @@ int main(){
 						 // if not, then just send the "client_finished" message
 			}
 			else if(state == 5){
+				change_cipher_spec(log_client);
+				printf("Client: change_cipher_spec\n"); // to delete
+				state++;
+			}
+			else if(state == 6){
+				client_finished(log_client, (char*) master_secret, ciphersuite_to_use);
+				printf("Client: client_finished\n"); // to delete
+				state++;
+			}
+			else if(state == 7){
+				receive_change_cipher_spec(log_client);
+				printf("Client: receiving server_change_cipher_spec\n"); // to delete
+				state++;
+			}
+			else if (state == 8){
+				receive_server_finished(log_client, master_secret, ciphersuite_to_use);
+				printf("Client: receiving server_finished\n");
 				change_semaphore_CLIENT();
-				printf("Client 5\n"); // to delete
 				break;
 			}
+
 			
 			change_semaphore_CLIENT();
 		}

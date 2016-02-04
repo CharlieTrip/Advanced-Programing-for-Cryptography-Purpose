@@ -16,8 +16,7 @@
 #include <string.h>
 #include <openssl/engine.h>
 
-const int len_sha1 = 20;
-const int len_md5 = 16;
+const int len_sha256 = 32;
 
 
 char * X509_to_string(X509 *cert) {
@@ -283,7 +282,7 @@ int HMAC_SHA2_file(FILE* file , unsigned char* key, unsigned int lkey, unsigned 
 int is_needed_keyexchange(char * ciphersuite_to_use){
   /* return 1 if key_exchange has to be done, 0 otherwise */
 
-  if (atoi(ciphersuite_to_use) == atoi(TLS_RSA_RSA_SHA1) || atoi(ciphersuite_to_use) == atoi(TLS_RSA_RSA_SHA2)){
+  if (atoi(ciphersuite_to_use) == atoi(TLS_RSA_WITH_SHA256) ){
   //DEVO CAPIRE ANCORA BENE COSA FARE CON TLS_DH_RSA
     return 0;
   }
@@ -292,65 +291,56 @@ int is_needed_keyexchange(char * ciphersuite_to_use){
 }
 
 
-int P_Hash_3round( const EVP_MD * evp_md, char * secret, int len_secret, char * text, int len_text, char * output,  int sha_len){
+int P_Hash( const EVP_MD * evp_md, int round, char * secret, int len_secret, char * text, int len_text, char * output,  int sha_len){
 
   /* This is just an function thougth for compute the master secret, *
    * So it has just 3 round and it return only 48 bytes and not 60   */
-
   // Definitions
   char * seed0 = calloc(len_text*2, sizeof(char));
-  char * seed1 = calloc(len_text+sha_len, sizeof(char));
-  char * seed2 = calloc(len_text+sha_len, sizeof(char));
+  char * seed = calloc(len_text+sha_len, sizeof(char));
   char * step0 = calloc(sha_len, sizeof(char));
-  char * step1 = calloc(sha_len, sizeof(char));
-  char * step2 = calloc(sha_len, sizeof(char));
+  char * step = calloc(sha_len, sizeof(char));
   // Creating the first seed
   strncpy(seed0, text, len_text); strncat(seed0, text, len_text);
   // compute first HMAC and copy it into output
   step0 = (char *) HMAC(evp_md, secret, len_secret, (const unsigned char *) seed0, strlen(seed0), NULL, NULL);
   strncpy(output, step0, sha_len);
   // Creating the second seed
-  strncpy(seed1,step0,sha_len); strncat(seed1, text, len_text);
-  // compute second HMAC and copy it into output
-  step1 = (char *) HMAC(evp_md, secret, len_secret, (const unsigned char *) seed1, len_text+sha_len, NULL, NULL);
-  strncat(output +sha_len, step1, sha_len);
-  // Creating the tird seed
-  strncpy(seed2, step1,sha_len); strncat(seed2, text, len_text);
-  // compute tird HMAC and copy it into output
-  step2 = (char *) HMAC(evp_md, secret, len_secret, (const unsigned char *) seed2, len_text+sha_len, NULL, NULL);
-  strncat(output +sha_len*2, step2, sha_len);
-  free(seed0); free(seed1); free(seed2);
+  strncpy(seed,step0,sha_len); strncat(seed, text, len_text);
+
+  for(int i = 0; i< round-1; i++){
+    // compute HMAC and copy it into output
+    step = (char *) HMAC(evp_md, secret, len_secret, (const unsigned char *) seed, len_text+sha_len, NULL, NULL);
+    strncat(output, step, sha_len);
+    // Creating the seed
+    free(seed);
+    seed = calloc(len_text+sha_len, sizeof(char));
+    strncpy(seed, step,sha_len); strncat(seed, text, len_text);
+  }
+  free(seed0); free(seed);
   // TODO mettere una condizione che verifica se c'è stato un errore di computazione
-    return 1;
+  return 1;
 }
 
 
 
 int compute_master_secret(unsigned char * master_secret, char * random_from_client, char * random_from_server, char * premaster_secret, char * label) {
 
-	char * sha1_part = calloc(len_sha1*3, sizeof(char));
-	char * md5_part = calloc(len_md5*3, sizeof(char)); 
+ // if( stiamo usando sha2) {...}
+
+	char * hash = calloc(len_sha256*3, sizeof(char));
 	char * seedsha = calloc(77, sizeof(char));
 	strncpy(seedsha, label,strlen(label)); strncat(seedsha, random_from_client,32); strncat(seedsha, random_from_server,32);
   char * seedmd5 = calloc(77, sizeof(char));
   memcpy(seedmd5,seedsha,77);
-	char * S1 = calloc(24, sizeof(char));
-	char * S2 = calloc(24, sizeof(char));
-	strncpy(S1, premaster_secret, 24);
-	strncpy(S2, premaster_secret+24, 24);
 
-  // compute the two's hmac
-	if (!P_Hash_3round( EVP_sha1(), S1, 24, seedsha, 77, sha1_part, len_sha1)){
+  // compute prs hmac
+	if (!P_Hash( EVP_sha256(), 3, premaster_secret, 48, seedsha, 77, hash, len_sha256)){
     return 0;
   }
-	if (!P_Hash_3round( EVP_md5(), S2, 24, seedmd5, 77, md5_part, len_md5)){
-    return 0;
-  }
-	// Perform the XOR between the two's
-	for(int i = 0; i<48; i++){
-		master_secret[i] = (char) sha1_part[i]^md5_part[i];
-	}
-	//free(sha1_part); free(md5_part); free(seed); free(S1); free(S2);
+
+  strncpy((char*) master_secret, hash, 48);
+
 	return 1;
 }
 

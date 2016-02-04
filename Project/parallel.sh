@@ -1,5 +1,6 @@
 #!/bin/bash
 
+rm ./server/log_server.txt ./client/log_client.txt
 gcc ./server/server.c -o ./server/server -lcrypto -lssl -I/usr/local/opt/openssl/include -L/usr/local/opt/openssl/lib
 gcc ./client/client.c -o ./client/client -lcrypto -lssl -I/usr/local/opt/openssl/include -L/usr/local/opt/openssl/lib
 

@@ -16,7 +16,7 @@ int main(){
 	char * premaster_secret = calloc(BUF_SIZE,sizeof(char));
 	unsigned char * master_secret = calloc(DIM_MASTER_SECRET+1, sizeof(char));
 
-	log_server = fopen("./server/log_server.txt","w");
+	log_server = fopen("./server/log_server.txt","a+");
 
     open_semaphore_to_CLIENT();
 
@@ -62,7 +62,18 @@ int main(){
 				state++;
 			}
 			else if(state == 5){
-				printf("Server 5\n"); // to delete
+				receive_change_cipher_spec(log_server);
+				printf("Server: receiving client_change_cipher_spec\n"); // to delete
+				state++;
+			}
+			else if(state == 6){
+				change_cipher_spec(log_server, master_secret, ciphersuite_to_use);
+				printf("Server: change_cipher_spec\n"); // to delete
+				state++;
+			}
+			else if(state == 7){
+				server_finished(log_server, (char*) master_secret, ciphersuite_to_use);
+				printf("Server: server_finished\n");
 				change_semaphore_SERVER();
 				break;
 			}

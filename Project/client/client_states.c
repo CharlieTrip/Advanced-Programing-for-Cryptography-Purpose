@@ -14,9 +14,9 @@ void hello_client (FILE* log_client, char * random_from_client){
 	// Generate Random part
 	gen_rdm_bytestream (RANDOM_DIM_HELLO, random_from_client, hexrandom);
 	// Send Hello Client to the Server
-	send_message (channel, 6, TLS_VERSION, TLS_HANDSHAKE, TLS_CLIENTHELLO, hexrandom, TLS_RSA_RSA_SHA1, TLS_RSA_RSA_SHA2);
+	send_message (channel, 5, TLS_VERSION, TLS_HANDSHAKE, TLS_CLIENTHELLO, hexrandom, TLS_RSA_WITH_SHA256);
 	// Save it in log_client
-	send_message (log_client, 7, sending, TLS_VERSION, TLS_HANDSHAKE, TLS_CLIENTHELLO, hexrandom, TLS_RSA_RSA_SHA1, TLS_RSA_RSA_SHA2);
+	send_message (log_client, 6, sending, TLS_VERSION, TLS_HANDSHAKE, TLS_CLIENTHELLO, hexrandom, TLS_RSA_WITH_SHA256);
 	fprintf(log_client, "\n\n");
 	fclose (channel);
 	free(hexrandom);
@@ -79,7 +79,7 @@ int exchange_key(FILE* log_client, char * ciphersuite_to_use, unsigned char * ma
 	send_message (log_client, 2, receiving, received_message);
 	fprintf(log_client, "\n\n");
 	free(received_message);
-	if ( !(atoi(ciphersuite_to_use) == atoi(TLS_RSA_RSA_SHA1) || atoi(ciphersuite_to_use) == atoi(TLS_RSA_RSA_SHA2))){
+	if ( !(atoi(ciphersuite_to_use) == atoi(TLS_RSA_WITH_SHA256)) ){
 			//DEVO CAPIRE ANCORA BENE COSA FARE CON TLS_DH_RSA
 		//
 	}
@@ -95,49 +95,78 @@ int exchange_key(FILE* log_client, char * ciphersuite_to_use, unsigned char * ma
 
 
 
-
-
-int change_cipher(FILE* log_client, char * secret, int sha){
+int change_cipher_spec(FILE* log_client){
 
 	FILE* channel = fopen (link_channel,"w");
-	FILE* tmp_log = log_client;
 
 	// Send ChangeCipherSuite to the Server
-	send_message (channel, 1, TLS_CHANGECIPHERSPEC);
-	send_message (log_client, 2, sending , TLS_CHANGECIPHERSPEC);
+	send_message (channel, 3, TLS_VERSION, TLS_HANDSHAKE, TLS_CHANGECIPHERSPEC);
+	send_message (log_client, 4, sending , TLS_VERSION, TLS_HANDSHAKE, TLS_CHANGECIPHERSPEC);
 	fprintf(log_client,  "\n\n");
 	fclose (channel);
-	
-	// 
-	//  Server must save the log until here to check after
-	//
-
-	// Generate Hash of the log
-	char * hashed_log;
-	if (sha == 1){
-		hashed_log = calloc (40 , sizeof(char));
-		HMAC_SHA1_file(tmp_log, (unsigned char *) secret, (int)strlen(secret), (unsigned char *) "", (unsigned char *) hashed_log);
-	}
-	else {
-		hashed_log = calloc (64 , sizeof(char));
-		HMAC_SHA2_file(tmp_log, (unsigned char *) secret, (int)strlen(secret), (unsigned char *) "", (unsigned char *) hashed_log);
-	}
-	// Send finish
-	send_message (channel, 4, TLS_VERSION, TLS_HANDSHAKE , TLS_FINISHED , hashed_log);
-	send_message (log_client, 5, sending, TLS_VERSION, TLS_HANDSHAKE , TLS_FINISHED , hashed_log);
-	fprintf(log_client,  "\n\n");
-	
 	return 1;
 }
 
+int client_finished(FILE* log_client, char * master_secret, char * ciphersuite_to_use){
 
+	int len_sha;
+	FILE* channel = fopen (link_channel,"w");
+	//if(true) { // condizione se si sta usando lo sha2
+		len_sha = 32;
+		unsigned char * hash_client_log = calloc (len_sha*2 , sizeof(char));
+		HMAC_SHA2_file(log_client, (unsigned char *) master_secret, (int)strlen(master_secret), (unsigned char *) "", (unsigned char *) hash_client_log);
+	//}
+	// Send finish
+	send_message (channel, 4, TLS_VERSION, TLS_HANDSHAKE , TLS_FINISHED , hash_client_log);
+	send_message (log_client, 5, sending, TLS_VERSION, TLS_HANDSHAKE , TLS_FINISHED , hash_client_log);
+	fprintf(log_client,  "\n\n");
+	fclose(channel);
+	return 1;
+}
 
+int receive_change_cipher_spec(FILE * log_client){
 
+	FILE* channel = fopen(link_channel,"r");
+	char * received_message = calloc(BUF_SIZE+1,sizeof(char));
+	// Read data from channel
+	read_channel (channel, received_message);
+	fclose(channel);
+	// Save it in log_server
+	send_message (log_client, 2, receiving, received_message);
+	fprintf(log_client, "\n\n");
+	return 1;
+}
 
-
-
-
-
+int receive_server_finished(FILE* log_client, unsigned char * master_secret, char * ciphersuite_to_use){
+	int len_sha;
+	FILE* channel = fopen(link_channel,"r");
+	char * received_message = calloc(BUF_SIZE+1,sizeof(char));
+	// Read data from channel
+	read_channel (channel, received_message);
+	fclose(channel);
+	//if(true) { // condizione se si sta usando lo sha2
+		len_sha = 32;
+		// Get the hash of the client_log
+		unsigned char * hash_server_log;
+		unsigned char * hash_client_log = calloc(len_sha*2, sizeof(char));
+		hash_server_log = (unsigned char*) get_nth_block(received_message, 4);
+		// Fai l'hash del  server_log
+		fclose(log_client); log_client = fopen("./client/log_client.txt","r");
+		HMAC_SHA2_file(log_client, (unsigned char *) master_secret, (int)strlen((char*) master_secret), (unsigned char *) "", (unsigned char *) hash_client_log);
+		fclose(log_client); log_client = fopen("./client/log_client.txt","a");
+		//}
+	if(strcmp( (char*) hash_client_log, (char*) hash_server_log)){
+		// TODO handle herror
+		free(received_message); free(hash_client_log);
+		return 0;
+	}
+	else{
+		send_message (log_client, 2, receiving, received_message);
+		fprintf(log_client, "\n\n");
+		free(received_message); free(hash_client_log);
+		return 1;
+	}
+}
 
 
 
