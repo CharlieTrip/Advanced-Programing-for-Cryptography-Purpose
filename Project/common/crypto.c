@@ -1,260 +1,292 @@
-#include <openssl/bio.h>
-#include <openssl/bn.h>
-#include <openssl/dh.h>
-#include <openssl/objects.h>
-#include <openssl/evp.h>
-#include <openssl/err.h>
-#include <openssl/hmac.h>
-#include <openssl/pem.h>
-#include <openssl/rsa.h>
-#include <openssl/sha.h>
-#include <openssl/x509.h>
-#include <openssl/x509_vfy.h>
-#include <openssl/x509v3.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <openssl/engine.h>
 
-#define BUF_SIZE ( 2048 )
+#include "crypto.h"
 
 
-// Certificates
+const int len_sha256 = 32;
 
-int verifyCertificate(unsigned char * cert_filestr){
 
-	const char ca_bundlestr[] = "./common/ca-bundle.pem";
+char * X509_to_string(X509 *cert) {
 
-	BIO              *certbio = NULL;
-	BIO               *outbio = NULL;
-	X509          *error_cert = NULL;
-	X509                *cert = NULL;
-	X509_NAME    *certsubject = NULL;
-	X509_STORE         *store = NULL;
-	X509_STORE_CTX  *vrfy_ctx = NULL;
-	int ret;
+  /* transform a x509 file into a string */
 
-	/* ---------------------------------------------------------- *
-	* These function calls initialize openssl for correct work.  *
-	* ---------------------------------------------------------- */
-	OpenSSL_add_all_algorithms();
-	ERR_load_BIO_strings();
-	ERR_load_crypto_strings();
+  BIO *bio = NULL;
+  char *string = NULL;
 
-	/* ---------------------------------------------------------- *
-	* Create the Input/Output BIO's.                             *
-	* ---------------------------------------------------------- */
-	certbio = BIO_new(BIO_s_file());
-	outbio  = BIO_new_fp(stdout, BIO_NOCLOSE);
+  if (NULL == cert){
+    return NULL;
+  }
+  bio = BIO_new(BIO_s_mem());
+  if (NULL == bio){
+    return NULL;
+  }
+  if (0 == PEM_write_bio_X509(bio, cert)){
+    BIO_free(bio);
+    return NULL;
+  }
+  string = (char *) malloc(bio->num_write + 1);
+  if (NULL == string){
+    BIO_free(bio);
+    return NULL;    
+  }
+  memset(string, 0, bio->num_write + 1);
+  BIO_read(bio, string,(int) bio->num_write);
+  BIO_free(bio);
+  return string;
+}
 
-	/* ---------------------------------------------------------- *
-	* Initialize the global certificate validation store object. *
-	* ---------------------------------------------------------- */
-	if (!(store=X509_STORE_new()))
-	BIO_printf(outbio, "Error creating X509_STORE_CTX object\n");
 
-	/* ---------------------------------------------------------- *
-	* Create the context structure for the validation operation. *
-	* ---------------------------------------------------------- */
-	vrfy_ctx = X509_STORE_CTX_new();
+X509 *string_to_X509(char *string) {
 
-	/* ---------------------------------------------------------- *
-	* Load the certificate and cacert chain from file (PEM).     *
-	* ---------------------------------------------------------- */
-	ret = BIO_read_filename(certbio, cert_filestr);
-	if (! (cert = PEM_read_bio_X509(certbio, NULL, 0, NULL))) {
-	BIO_printf(outbio, "Error loading cert into memory\n");
-	exit(-1);
-	}
+/* transform a string into a x509 file */  
 
-	ret = X509_STORE_load_locations(store, ca_bundlestr, NULL);
-	if (ret != 1)
-	BIO_printf(outbio, "Error loading CA cert or chain file\n");
+  X509 *cert = NULL;
+  BIO *bio = NULL;
+  if (NULL == string){
+    return NULL;
+  }
+  bio = BIO_new_mem_buf(string, (int) strlen(string));
+  if (NULL == bio){
+    return NULL;
+  }
+  cert = PEM_read_bio_X509(bio, NULL, NULL, NULL);
+  BIO_free(bio);
+  return cert;
+}
 
-	/* ---------------------------------------------------------- *
-	* Initialize the ctx structure for a verification operation: *
-	* Set the trusted cert store, the unvalidated cert, and any  *
-	* potential certs that could be needed (here we set it NULL) *
-	* ---------------------------------------------------------- */
-	X509_STORE_CTX_init(vrfy_ctx, store, cert, NULL);
 
-	/* ---------------------------------------------------------- *
-	* Check the complete cert chain can be build and validated.  *
-	* Returns 1 on success, 0 on verification failures, and -1   *
-	* for trouble with the ctx object (i.e. missing certificate) *
-	* ---------------------------------------------------------- */
-	ret = X509_verify_cert(vrfy_ctx);
-	
-	/* ---------------------------------------------------------- *
-	* Free up all structures                                     *
-	* ---------------------------------------------------------- */
-	X509_STORE_CTX_free(vrfy_ctx);
-	X509_STORE_free(store);
-	X509_free(cert);
-	BIO_free_all(certbio);
-	BIO_free_all(outbio);
 
-	return ret;
+char * get_certificate( char * link) {
+
+/* Get the certificate from a pem file and *
+ * return it as a string                   */
+  BIO *certbio = NULL;
+  X509 *cert = NULL;
+  certbio = BIO_new(BIO_s_file());
+  int ret;
+  OpenSSL_add_all_algorithms();
+  ret = (int) BIO_read_filename(certbio, link);
+  if (! (cert = PEM_read_bio_X509(certbio, NULL, 0, NULL))) {
+    printf("Error loading cert into memory\n");
+  }
+  return X509_to_string(cert);
 }
 
 
 
 
-// RSA
-// 
-// Uses the format
-// 
-// 		--- BEGIN x---
-// 			[...]
-// 		--- END x---
 
-int padding = RSA_PKCS1_PADDING;
 
-RSA * createRSA(unsigned char * key,int public){
-    RSA *rsa= NULL;
-    BIO *keybio ;
-    keybio = BIO_new_mem_buf(key, -1);
-    
-    if (keybio==NULL) {
-        printf( "Failed to create key BIO");
-        return 0;
-    }
 
-    if (public) {
-        rsa = PEM_read_bio_RSA_PUBKEY(keybio, &rsa,NULL, NULL);
-    }
+
+int get_pubkey(const char * pubkey_filestr, const char * cert_filestr) {
+
+  EVP_PKEY *pkey = NULL;
+  BIO              *certbio = NULL;
+  X509                *cert = NULL;
+  int ret;
+
+  /* ---------------------------------------------------------- *
+   * These function calls initialize openssl for correct work.  *
+   * ---------------------------------------------------------- */
+  OpenSSL_add_all_algorithms();
+  ERR_load_BIO_strings();
+  ERR_load_crypto_strings();
+
+  /* ---------------------------------------------------------- *
+   * Create the Input BIO's.                             *
+   * ---------------------------------------------------------- */
+  certbio = BIO_new(BIO_s_file());
+
+  /* ---------------------------------------------------------- *
+   * Load the certificate from file (PEM).                      *
+   * ---------------------------------------------------------- */
+  ret = (int) BIO_read_filename(certbio, cert_filestr);
     
-    else {
-        rsa = PEM_read_bio_RSAPrivateKey(keybio, &rsa,NULL, NULL);
-    }
-    
-    if (rsa == NULL) {
-        printf( "Failed to create RSA");
-    }
-    return rsa;
+  if (! (cert = PEM_read_bio_X509(certbio, NULL, 0, NULL))) {
+    printf("Error loading cert into memory\n");
+    return -1;
+  }
+
+  /* ---------------------------------------------------------- *
+   * Extract the certificate's public key data.                 *
+   * ---------------------------------------------------------- */
+  if ((pkey = X509_get_pubkey(cert)) == NULL)
+    printf("Error getting public key from certificate\n");
+
+  FILE *key_file = fopen(pubkey_filestr, "w");
+  if(!PEM_write_PUBKEY(key_file, pkey)){
+    printf("Error writing public key data in PEM format\n");
+  }
+  fclose(key_file);
+
+  EVP_PKEY_free(pkey);
+  X509_free(cert);
+  BIO_free_all(certbio);
+  return 1;
 }
+
+
+
+
+void choose_best_ciphersuite(char * message, char * best_chipersuite){
+
+  int n_ciphersuites = get_n_of_blocks(message)-3;
+  int ciphersuites[n_ciphersuites];
+  int best;
+  for (int i = 0; i < n_ciphersuites; ++i){
+    ciphersuites[i] = atoi(get_nth_block(message,5+i));
+  }
+  best = ciphersuites[0];
+  for (int i = 1; i < n_ciphersuites; ++i)
+  {
+    if (best<ciphersuites[i]){
+      best = ciphersuites[i];
+    }
+  }
+  sprintf(best_chipersuite, "%d", best);
+}
+
+
+
+RSA * TLS_createRSAWithFilename(char * filename, char * public_or_private){
+
+  /* get the RSA public or private key */
+
+  int public;
+  if(!strcmp(public_or_private,"public")){
+    public = 1;
+  }
+  else{
+    public = 0;
+  }
+  FILE * fp = fopen(filename,"rb");
  
-int TLS_RSA_public_encrypt(unsigned char * data,int data_len,unsigned char * key, unsigned char *encrypted){
-    RSA * rsa = createRSA(key,1);
-    int result = RSA_public_encrypt(data_len,data,encrypted,rsa,padding);
-    return result;
+  if(fp == NULL){
+      printf("Unable to open file %s \n",filename);
+      return NULL;    
+  }
+  RSA *rsa= RSA_new() ;
+  if(public){
+      rsa = PEM_read_RSA_PUBKEY(fp, &rsa,NULL, NULL);
+  }
+  else{
+      rsa = PEM_read_RSAPrivateKey(fp, &rsa,NULL, NULL);
+  }
+
+  return rsa;
 }
 
-int TLS_RSA_private_decrypt(unsigned char * enc_data,int data_len,unsigned char * key, unsigned char *decrypted){
-    RSA * rsa = createRSA(key,0);
-    int  result = RSA_private_decrypt(data_len,enc_data,decrypted,rsa,padding);
-    return result;
-}
-  
-int TLS_RSA_private_encrypt(unsigned char * data,int data_len,unsigned char * key, unsigned char *encrypted){
-    RSA * rsa = createRSA(key,0);
-    int result = RSA_private_encrypt(data_len,data,encrypted,rsa,padding);
-    return result;
-}
 
-int TLS_RSA_public_decrypt(unsigned char * enc_data,int data_len,unsigned char * key, unsigned char *decrypted){
-    RSA * rsa = createRSA(key,1);
-    int  result = RSA_public_decrypt(data_len,enc_data,decrypted,rsa,padding);
-    return result;
-}
+
+
  
+int TLS_RSA_public_encrypt(unsigned char * data, int data_len, const char * key, char *encrypted){
+  RSA * pubkey = TLS_createRSAWithFilename((char *) key, "public");
+  int result = RSA_public_encrypt(data_len, data,(unsigned char *) encrypted, pubkey, RSA_PKCS1_PADDING);
+  if (pubkey)
+    RSA_free(pubkey);
+  return result;
+}
+
+
+int TLS_RSA_private_decrypt(unsigned char * enc_data, int data_len, const char * key, unsigned char * decrypted){
+    RSA * privkey = TLS_createRSAWithFilename((char *) key,"private");
+    int  result = RSA_private_decrypt(data_len, enc_data, decrypted, privkey, RSA_PKCS1_PADDING);
+      if (privkey)
+    RSA_free(privkey);
+    return result;
+}
 
 
 
-// DH [WIP]
-//  http://linux.die.net/man/3/ssl_ctx_set_tmp_dh
-// Pass the PEM format of DH
-
-DH * DH_create(unsigned char * parameter){
-	DH *dh= NULL;
-    BIO *keybio ;
-    keybio = BIO_new_mem_buf(parameter, -1);
+int is_needed_keyexchange(char * ciphersuite_to_use){
+  /* return 1 if key_exchange has to be done, 0 otherwise */
     
-    if (keybio == NULL) {
-        printf( "Failed to create parameter BIO");
-        return 0;
+  if (atoi(ciphersuite_to_use) == atoi(TLS_RSA_WITH_SHA256) ){
+    return 0;
+  }
+  else 
+    return 1;
+}
+
+
+int P_Hash( const EVP_MD * evp_md, int round, char * secret, int len_secret, char * text, int len_text, char * output,  int sha_len){
+
+  /* This is just an function thougth for compute the master secret, *
+   * So it has just 3 round and it return only 48 bytes and not 60   */
+  // Definitions
+  char * seed0 = calloc(len_text*2, sizeof(char));
+  char * seed = calloc(len_text+sha_len, sizeof(char));
+  char * step0;
+  char * step;
+  // Creating the first seed
+  strncpy(seed0, text, len_text); strncat(seed0, text, len_text);
+  // compute first HMAC and copy it into output
+  step0 = (char *) HMAC(evp_md, secret, len_secret, (const unsigned char *) seed0, strlen(seed0), NULL, NULL);
+  strncpy(output, step0, sha_len);
+  // Creating the second seed
+  strncpy(seed,step0,sha_len); strncat(seed, text, len_text);
+
+  for(int i = 0; i< round-1; i++){
+    // compute HMAC and copy it into output
+    step = (char *) HMAC(evp_md, secret, len_secret, (const unsigned char *) seed, len_text+sha_len, NULL, NULL);
+    strncat(output, step, sha_len);
+    // Creating the seed
+    free(seed);
+    seed = calloc(len_text+sha_len, sizeof(char));
+    strncpy(seed, step,sha_len); strncat(seed, text, len_text);
     }
-
-    
-    dh = PEM_read_bio_DHparams(keybio, &dh , NULL , NULL);
-    
-    if (dh == NULL) {
-        printf( "Failed to create DH");
-    }
-   
-	return(dh);
-}
-
-int DH_generate_keys(DH * dh){
-	return DH_generate_key(dh);
-}
-
-int DH_secret(DH * dh , BIGNUM * pub_key , BIGNUM * secret){
-	unsigned char key[DH_size(dh)];
-	if (DH_compute_key(key, pub_key, dh) == -1) return -1;
-	BIGNUM *p = BN_bin2bn(key, sizeof(key), NULL);
-	BN_copy(secret,p);
-	return 0 ;
+    free(seed0); free(seed);
+    return 1;
 }
 
 
 
+int compute_master_secret(unsigned char * master_secret, char * random_from_client, char * random_from_server, char * premaster_secret, char * label) {
 
-// HMAC
+ // if( stiamo usando sha2) {...}
 
-int HMAC_SHA1(unsigned char* key ,unsigned int lkey, unsigned char* data, unsigned int ldata, unsigned char* expected , unsigned char* result){
-	unsigned int result_len = 20;
-	int i;
-	unsigned char * results;
-	static char res_hexstring[40];
-	// result = HMAC(EVP_sha256(), key, 4, data, 28, NULL, NULL);
-	results = HMAC(EVP_sha1(), key, lkey, data, ldata, NULL, NULL);
-	for (i = 0; i < result_len; i++) {
-		sprintf(&(res_hexstring[i * 2]), "%02x", results[i]);
-	}
-	
-	for (i=0; i < (result_len*2); i++) {
-		result[i] = res_hexstring[i];
-	}
+	char * hash = calloc(32*3,sizeof(char));
+	char * seedsha = calloc(77, sizeof(char));
+	strncpy(seedsha, label,strlen(label)); strncat(seedsha, random_from_client,32); strncat(seedsha, random_from_server,32);
 
-	if (strcmp((char*) res_hexstring, (char*) expected) == 0) {
-		return 0;
-	} else {
-		return -1;
-	}
+  // compute prs hmac
+	if (!P_Hash( EVP_sha256(), 3, premaster_secret, 48, seedsha, 77, hash, len_sha256)){
+        printf("Computation PRF failed\n");
+    return 0;
+  }
+
+  strncpy((char*) master_secret, hash, 48);
+
+	return 1;
 }
 
-int HMAC_SHA2(unsigned char* key ,unsigned int lkey, unsigned char* data, unsigned int ldata, unsigned char* expected ,unsigned char* result){
-	unsigned int result_len = 32;
-	int i;
-	unsigned char * results;
-	static char res_hexstring[64];
-	results = HMAC(EVP_sha256(), key, lkey, data, ldata, NULL, NULL);
-	for (i = 0; i < result_len; i++) {
-		sprintf(&(res_hexstring[i * 2]), "%02x", results[i]);
-	}
 
-	for (i=0; i < (result_len*2); i++) {
-		result[i] = res_hexstring[i];
-	}
+int compute_hash_log(FILE * log, unsigned char * master_secret, unsigned int len_master_secret, unsigned char * hash_server_log){
 
-	if (strcmp((char*) res_hexstring, (char*) expected) == 0) {
-		return 0;
-	} else {
-		return -1;
-	}
+  char *data = calloc(BUF_SIZE,sizeof(char));
+  char *hash = calloc(len_sha256,sizeof(char));
+  char ch;
+  int i = 0;
+  while( ( ch = fgetc(log) ) != EOF ){
+    data[i] = ch; i++;
+  }
+
+  P_Hash( EVP_sha256(), 1, (char*) master_secret, (int) strlen((const char *)master_secret), data, i-1, (char *) hash,  len_sha256);
+
+  stringToHex(hash, 12, (char *) hash_server_log);
+
+  return 1;
 }
 
-int HMAC_SHA1_file(FILE* file , unsigned char* key, unsigned int lkey, unsigned char* expected , unsigned char* result){
-	char *data = calloc(BUF_SIZE,sizeof(char));
-	read_channel(file,data);
-	return HMAC_SHA1(key,lkey,data,(unsigned int)strlen(data),expected,result);
-}
 
-int HMAC_SHA2_file(FILE* file , unsigned char* key, unsigned int lkey, unsigned char* expected , unsigned char* result){
-	char *data = calloc(BUF_SIZE,sizeof(char));
-	read_channel(file,data);
-	return HMAC_SHA2(key,lkey,data,(unsigned int) strlen(data),expected,result);
-}
+
+
+
+
+
+
+
+
 
 

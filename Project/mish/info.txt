@@ -1,0 +1,18 @@
+ 
+*******************************************************
+
+ INFO
+
+ The implementation of TLS 1.1 in C for the
+ course of Advanced Programming for Cryptographic 
+ Protocol, depMath, University of Trento.
+
+ author -> Budroni Alessandro
+ mail -> budroni.alessandro@gmail.com
+ date -> 08/02/2016
+
+ Ciphersuites implemented: 
+ - TLS_RSA_WITH_SHA256
+ - TLS_DHE_RSA_WITH_SHA256
+
+*******************************************************

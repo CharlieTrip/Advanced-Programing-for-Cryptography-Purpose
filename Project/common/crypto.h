@@ -1,15 +1,7 @@
-// 
-// [WIP]
-// 
-// All the prototype for the crypto elements to be used in the protocol
-// Using OpenSSL API for this part
-
-// 
-// All the includes for the OpenSSL
-
 #include <openssl/bio.h>
 #include <openssl/bn.h>
 #include <openssl/dh.h>
+#include <openssl/objects.h>
 #include <openssl/evp.h>
 #include <openssl/err.h>
 #include <openssl/hmac.h>
@@ -22,37 +14,39 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
-// 
-// Certificate 
-
-int verifyCertificate(unsigned char * certificate);
-int getPubKey(unsigned char * cert_filestr);
-
-// 
-// RSA functions
-
-RSA * createRSA(unsigned char * key,int public);
-int TLS_RSA_public_encrypt(unsigned char * data,int data_len,unsigned char * key, unsigned char *encrypted);
-int TLS_RSA_private_decrypt(unsigned char * enc_data,int data_len,unsigned char * key, unsigned char *decrypted);
-int TLS_RSA_private_encrypt(unsigned char * data,int data_len,unsigned char * key, unsigned char *encrypted);
-int TLS_RSA_public_decrypt(unsigned char * enc_data,int data_len,unsigned char * key, unsigned char *decrypted); 
+#include <openssl/engine.h>
+#include "utilities.h"
 
 
-// 
-// DH function
-// [WIP on prototypes]
+char * X509_to_string(X509 *cert);
+
+X509 *string_to_X509(char *string);
+
+char * get_certificate( char * link);
+
+int get_pubkey(const char * pubkey_filestr, const char * cert_filestr);
+
+void choose_best_ciphersuite(char * message, char * best_chipersuite);
+
+RSA * TLS_createRSAWithFilename(char * filename, char * public_or_private);
+ 
+int TLS_RSA_public_encrypt(unsigned char * data, int data_len, const char * key, char *encrypted);
+
+int TLS_RSA_private_decrypt(unsigned char * enc_data, int data_len, const char * key, unsigned char * decrypted);
+
+int is_needed_keyexchange(char * ciphersuite_to_use);
+
+int P_Hash( const EVP_MD * evp_md, int round, char * secret, int len_secret, char * text, int len_text, char * output,  int sha_len);
+
+int compute_master_secret(unsigned char * master_secret, char * random_from_client, char * random_from_server, char * premaster_secret, char * label);
+
+int compute_hash_log(FILE * log, unsigned char * master_secret, unsigned int len_master_secret, unsigned char * hash_server_log);
 
 
-DH * DH_create(unsigned char * parameter);
-int DH_generate_keys(DH * dh);
-int DH_public_encrypt(unsigned char * data,int data_len,unsigned char * key, unsigned char *encrypted);
-int DH_private_decrypt(unsigned char * enc_data,int data_len,unsigned char * key, unsigned char *decrypted);
-int DH_private_encrypt(unsigned char * data,int data_len,unsigned char * key, unsigned char *encrypted);
-int DH_public_decrypt(unsigned char * enc_data,int data_len,unsigned char * key, unsigned char *decrypted); 
 
-// 
-// Hashing functions for HMAC
 
-int HMAC_MD5(unsigned char* key ,unsigned int lkey, unsigned char* data, unsigned int ldata, unsigned char* expected ,unsigned char* result);
-int HMAC_SHA2(unsigned char* key ,unsigned int lkey, unsigned char* data, unsigned int ldata, unsigned char* expected ,unsigned char* result);
+
+
+
+
+

@@ -1,0 +1,9 @@
+*******************************************************
+
+ USAGE: ./see.sh [—-]
+
+ -client -> See the client's log
+ -server -> See the server's log
+ -readme -> See the README.txt file
+
+*******************************************************
