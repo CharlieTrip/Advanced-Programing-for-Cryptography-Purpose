@@ -110,7 +110,7 @@ int decrypt_secret_RSA(FILE * log_server, char * premaster_secret){
 
 int check_input(char * argv[]){
 
-    if (!strcmp(argv[1], "-DHE") || !strcmp(argv[1], "-RSA")){
+    if (!strcmp(argv[1], "-DHE_SHA256") || !strcmp(argv[1], "-RSA_SHA256") || !strcmp(argv[1], "-DHE_SHA384") || !strcmp(argv[1], "-RSA_SHA384") || !strcmp(argv[1], "-DHE_SHA224") || !strcmp(argv[1], "-RSA_SHA224") || !strcmp(argv[1], "-DHE_SHA512") || !strcmp(argv[1], "-RSA_SHA512")){
             return 1;
            }
     else {

@@ -13,16 +13,18 @@
 
 //Ciphersuites
 
+extern const char TLS_DHE_RSA_WITH_SHA224[];
 extern const char TLS_DHE_RSA_WITH_SHA256[];
+extern const char TLS_DHE_RSA_WITH_SHA384[];
+extern const char TLS_DHE_RSA_WITH_SHA512[];
+extern const char TLS_RSA_WITH_SHA224[];
 extern const char TLS_RSA_WITH_SHA256[];
-
-
+extern const char TLS_RSA_WITH_SHA384[];
+extern const char TLS_RSA_WITH_SHA512[];
 
 // Signature ALGORITMS
 
 extern const char TLS_SIGN_RSA_SHA256[];
-extern const char TLS_SIGN_DSA_SHA256[];
-
 
 extern const char TLS_ALERT[];
 extern const char TLS_HANDSHAKE[];
@@ -72,8 +74,6 @@ int get_nth_length_block(char * message, int n_block);
 char * get_nth_block(char * message, int n_block);
 
 int get_block(char * message, int n_block, char * result);
-
-void get_random_block(char * message, char * random_block);
 
 int hexToString(char * hexstring, char* charstring);
 

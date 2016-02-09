@@ -9,7 +9,6 @@ int main(int argc, char *argv[]){
     
     char * ciphersuite_to_use = check_input(argv);
     
-    
     DH * dh;
     if(is_needed_keyexchange(ciphersuite_to_use)){
     // here we see if the key_echange from server is needed or not

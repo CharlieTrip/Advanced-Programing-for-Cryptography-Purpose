@@ -36,12 +36,13 @@ void change_semaphore_CLIENT(){
 
 void open_semaphore_to_CLIENT(){
 	/* the server open the communication perimissions */
-	fopen("./semaphore/ok_client.txt","w");
+        fopen("./semaphore/ok_client.txt","w");
+    
 }
 
 void close_all(){
     /* close all the connection */
     remove("./semaphore/ok_client.txt");
     remove("./semaphore/ok_server.txt");
-    //remove("./common/channel.txt");
+    //remove("./channel.txt");
 }

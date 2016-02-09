@@ -38,9 +38,9 @@ int is_needed_keyexchange(char * ciphersuite_to_use);
 
 int P_Hash( const EVP_MD * evp_md, int round, char * secret, int len_secret, char * text, int len_text, char * output,  int sha_len);
 
-int compute_master_secret(unsigned char * master_secret, char * random_from_client, char * random_from_server, char * premaster_secret, char * label);
+int compute_master_secret(unsigned char * master_secret, const EVP_MD * evp_md, char * random_from_client, char * random_from_server, char * premaster_secret, char * label);
 
-int compute_hash_log(FILE * log, unsigned char * master_secret, unsigned int len_master_secret, unsigned char * hash_server_log);
+int compute_hash_log(FILE * log, const EVP_MD * evp_md, unsigned char * master_secret, unsigned int len_master_secret, unsigned char * hash_server_log);
 
 
 

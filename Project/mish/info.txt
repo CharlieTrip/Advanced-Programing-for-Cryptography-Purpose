@@ -12,7 +12,13 @@
  date -> 08/02/2016
 
  Ciphersuites implemented: 
+ - TLS_RSA_WITH_SHA224
  - TLS_RSA_WITH_SHA256
+ - TLS_RSA_WITH_SHA384
+ - TLS_RSA_WITH_SHA512
+ - TLS_DHE_RSA_WITH_SHA224
  - TLS_DHE_RSA_WITH_SHA256
+ - TLS_DHE_RSA_WITH_SHA384
+ - TLS_DHE_RSA_WITH_SHA512
 
 *******************************************************

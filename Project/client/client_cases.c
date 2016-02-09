@@ -93,12 +93,30 @@ char * check_input(char * argv[]){
 
 	char * ciphersuite = NULL;
     
-	if (!strcmp(argv[1], "-DHE")){
+	if (!strcmp(argv[1], "-DHE_SHA256")){
 		ciphersuite = (char *) TLS_DHE_RSA_WITH_SHA256;
 	}
-	else if (!strcmp(argv[1], "-RSA")){
+	else if (!strcmp(argv[1], "-RSA_SHA256")){
 		ciphersuite = (char *) TLS_RSA_WITH_SHA256;
 	}
+    else if (!strcmp(argv[1], "-DHE_SHA384")){
+        ciphersuite = (char *) TLS_DHE_RSA_WITH_SHA384;
+    }
+    else if (!strcmp(argv[1], "-RSA_SHA384")){
+        ciphersuite = (char *) TLS_RSA_WITH_SHA384;
+    }
+    else if (!strcmp(argv[1], "-DHE_SHA224")){
+        ciphersuite = (char *) TLS_DHE_RSA_WITH_SHA224;
+    }
+    else if (!strcmp(argv[1], "-RSA_SHA224")){
+        ciphersuite = (char *) TLS_RSA_WITH_SHA224;
+    }
+    else if (!strcmp(argv[1], "-DHE_SHA512")){
+        ciphersuite = (char *) TLS_DHE_RSA_WITH_SHA512;
+    }
+    else if (!strcmp(argv[1], "-RSA_SHA512")){
+        ciphersuite = (char *) TLS_RSA_WITH_SHA512;
+    }
     else if (!strcmp(argv[1], "-i")){
         print_file("./mish/info.txt");
         exit(-1);

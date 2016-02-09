@@ -1,27 +1,18 @@
 
 #include "utilities.h"
 
-/*
-#include <unistd.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <stdarg.h>
-#include <time.h>
-#include <openssl/rand.h>
-
-#define BUF_SIZE ( 4098 )
-*/ 
-
+const char TLS_DHE_RSA_WITH_SHA224[] = "10";
 const char TLS_DHE_RSA_WITH_SHA256[] = "11";
-const char TLS_RSA_WITH_SHA256[] = "12";
+const char TLS_DHE_RSA_WITH_SHA384[] = "12";
+const char TLS_DHE_RSA_WITH_SHA512[] = "13";
+const char TLS_RSA_WITH_SHA224[] = "14";
+const char TLS_RSA_WITH_SHA256[] = "15";
+const char TLS_RSA_WITH_SHA384[] = "16";
+const char TLS_RSA_WITH_SHA512[] = "17";
 
 
 // Signature ALGORITMS
 const char TLS_SIGN_RSA_SHA256[] = "20";
-const char TLS_SIGN_DSA_SHA256[] = "21";
-
-
 
 // The Message Type (for the Handshake)
 
@@ -241,27 +232,6 @@ int get_block(char * message, int n_block, char * result){
     strncpy(result,message+pos,end);
     return 1;
 }
-
-
-
-void get_random_block(char * message, char * random_block){
-/* use this code to get the random block from the message */
-
-    int length;
-    length = get_byte_length(message);
-    int count_tab = 1;
-
-    for (int i = 0; i < length; ++i){
-        if (message[i] == '\t'){
-            count_tab++;
-        }
-        if (count_tab == 4 && message[i] != '\t'){
-                 strncpy (random_block, message+i,  32);
-                break;
-        }
-    }
-}
-
 
 
 int hexToString(char * hexstring, char* charstring){

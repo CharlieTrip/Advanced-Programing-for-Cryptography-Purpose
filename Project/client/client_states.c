@@ -64,12 +64,9 @@ int receive_certificate (FILE* log_client, char * ciphersuite_to_use){
 	certificate = get_nth_block(received_message,CERTIFICATE_POSITION);
 	PEM_write_X509(cert_file, string_to_X509(certificate));
  	free(received_message);
- 	//free(certificate); NON GLI PIACE IL FREE
  	fclose(cert_file);
- 	// Nel caso di RSA
- 	if(atoi(ciphersuite_to_use) == atoi(TLS_DHE_RSA_WITH_SHA256) || atoi(ciphersuite_to_use) == atoi(TLS_RSA_WITH_SHA256)){
-		get_pubkey(RSA_link_public_key, RSA_link_certificate);
-	}
+    // Write the public key in a .PEM file
+    get_pubkey(RSA_link_public_key, RSA_link_certificate);
 	return 1;
 }
 
@@ -176,14 +173,31 @@ int exchange_key(FILE* log_client, char * ciphersuite_to_use, unsigned char * ma
 	fprintf(log_client, "\n\n");
 	free(received_message);
     // compute and exchange premaster_secret
-	if ( (atoi(ciphersuite_to_use) == atoi(TLS_RSA_WITH_SHA256)) ){
+	if ( atoi(ciphersuite_to_use) == atoi(TLS_RSA_WITH_SHA256) ||
+        atoi(ciphersuite_to_use) == atoi(TLS_RSA_WITH_SHA384) || atoi(ciphersuite_to_use) == atoi(TLS_RSA_WITH_SHA224) ||
+        atoi(ciphersuite_to_use) == atoi(TLS_RSA_WITH_SHA512)){
 		encrypt_secret_RSA(log_client, premaster_secret);
 	}
-	else if ((atoi(ciphersuite_to_use) == atoi(TLS_DHE_RSA_WITH_SHA256))){
+	else if (atoi(ciphersuite_to_use) == atoi(TLS_DHE_RSA_WITH_SHA256) || atoi(ciphersuite_to_use) == atoi(TLS_DHE_RSA_WITH_SHA384) || atoi(ciphersuite_to_use) == atoi(TLS_DHE_RSA_WITH_SHA224) || atoi(ciphersuite_to_use) == atoi(TLS_DHE_RSA_WITH_SHA512)){
 		encrypt_secret_DH(log_client, premaster_secret, received_message, dh);
 	}
-
-	if(!compute_master_secret (master_secret, random_from_client, random_from_server, premaster_secret, "master secret")){
+    
+    const EVP_MD * evp_md;
+    
+    if(atoi(ciphersuite_to_use) == atoi(TLS_DHE_RSA_WITH_SHA224) || atoi(ciphersuite_to_use) == atoi(TLS_RSA_WITH_SHA224)){
+        evp_md = EVP_sha224();
+    }
+    else if(atoi(ciphersuite_to_use) == atoi(TLS_RSA_WITH_SHA256) || atoi(ciphersuite_to_use) == atoi(TLS_DHE_RSA_WITH_SHA256)){
+        evp_md = EVP_sha256();
+    }
+    else if(atoi(ciphersuite_to_use) == atoi(TLS_DHE_RSA_WITH_SHA384) || atoi(ciphersuite_to_use) == atoi(TLS_RSA_WITH_SHA384)){
+        evp_md = EVP_sha384();
+    }
+    else{
+        evp_md = EVP_sha512();
+    }
+    
+	if(!compute_master_secret (master_secret, evp_md, random_from_client, random_from_server, premaster_secret, "master secret")){
 		printf("CLIENT: computing master_secret failed\n");
 		return 0;
 	}    
@@ -211,7 +225,24 @@ int client_finished(FILE* log_client, char * master_secret, char * ciphersuite_t
     unsigned char * hash_client_log = calloc (24 , sizeof(unsigned char));
     fclose(log_client); log_client = fopen("./log/log_client.txt","r");
     // Compute hash of the log
-    compute_hash_log(log_client, (unsigned char *) master_secret,(int) strlen((const char *)master_secret), hash_client_log);
+    
+    const EVP_MD * evp_md;
+    
+    if(atoi(ciphersuite_to_use) == atoi(TLS_DHE_RSA_WITH_SHA224) || atoi(ciphersuite_to_use) == atoi(TLS_RSA_WITH_SHA224)){
+        evp_md = EVP_sha224();
+    }
+    else if(atoi(ciphersuite_to_use) == atoi(TLS_RSA_WITH_SHA256) || atoi(ciphersuite_to_use) == atoi(TLS_DHE_RSA_WITH_SHA256)){
+        evp_md = EVP_sha256();
+    }
+    else if(atoi(ciphersuite_to_use) == atoi(TLS_DHE_RSA_WITH_SHA384) || atoi(ciphersuite_to_use) == atoi(TLS_RSA_WITH_SHA384)){
+        evp_md = EVP_sha384();
+    }
+    else {
+        evp_md = EVP_sha512();
+    }
+
+    
+    compute_hash_log(log_client, evp_md, (unsigned char *) master_secret,(int) strlen((const char *)master_secret), hash_client_log);
     fclose(log_client); log_client = fopen("./log/log_client.txt","a");
 	send_message (channel, 4, TLS_VERSION, TLS_HANDSHAKE , TLS_FINISHED , hash_client_log);
 	send_message (log_client, 5, sending, TLS_VERSION, TLS_HANDSHAKE , TLS_FINISHED , hash_client_log);
@@ -252,9 +283,24 @@ int receive_server_finished(FILE* log_client, unsigned char * master_secret, cha
     unsigned char * hash_client_log = calloc(24, sizeof(char));
     get_block(received_message, 4, (char*) hash_server_log);
     
+    const EVP_MD * evp_md;
+    
+    if(atoi(ciphersuite_to_use) == atoi(TLS_DHE_RSA_WITH_SHA224) || atoi(ciphersuite_to_use) == atoi(TLS_RSA_WITH_SHA224)){
+        evp_md = EVP_sha224();
+    }
+    else if(atoi(ciphersuite_to_use) == atoi(TLS_RSA_WITH_SHA256) || atoi(ciphersuite_to_use) == atoi(TLS_DHE_RSA_WITH_SHA256)){
+        evp_md = EVP_sha256();
+    }
+    else if(atoi(ciphersuite_to_use) == atoi(TLS_DHE_RSA_WITH_SHA384) || atoi(ciphersuite_to_use) == atoi(TLS_RSA_WITH_SHA384)){
+        evp_md = EVP_sha384();
+    }
+    else {
+        evp_md = EVP_sha512();
+    }
+    
     // Compute the hash of the log
     fclose(log_client); log_client = fopen("./log/log_client.txt","r");
-    compute_hash_log(log_client, (unsigned char *) "a", 1, hash_client_log);
+    compute_hash_log(log_client, evp_md, (unsigned char *) master_secret, 48, hash_client_log);
     fclose(log_client); log_client = fopen("./log/log_client.txt","a");
 	// Compare the two hash
     if(strcmp( (char*) hash_client_log, (char*) hash_server_log)){

@@ -5,7 +5,14 @@
 
  -i -> see the info about this script
  -u -> see the usage (this page)
- -RSA -> use the ciphersuite TLS_RSA_WITH_SHA256
- -DHE -> use the ciphersuite TLS_DHE_RSA_WITH_SHA256
+ -RSA_SHA224 -> use the ciphersuite TLS_RSA_WITH_SHA224
+ -RSA_SHA256 -> use the ciphersuite TLS_RSA_WITH_SHA256
+ -RSA_SHA384 -> use the ciphersuite TLS_RSA_WITH_SHA384
+ -RSA_SHA512 -> use the ciphersuite TLS_RSA_WITH_SHA512
+ -DHE_SHA224 -> use the ciphersuite TLS_DHE_RSA_WITH_SHA224
+ -DHE_SHA256 -> use the ciphersuite TLS_DHE_RSA_WITH_SHA256
+ -DHE_SHA384 -> use the ciphersuite TLS_DHE_RSA_WITH_SHA384
+ -DHE_SHA512 -> use the ciphersuite TLS_DHE_RSA_WITH_SHA512
+
 
 *******************************************************

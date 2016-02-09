@@ -62,9 +62,8 @@ char * get_certificate( char * link) {
   BIO *certbio = NULL;
   X509 *cert = NULL;
   certbio = BIO_new(BIO_s_file());
-  int ret;
   OpenSSL_add_all_algorithms();
-  ret = (int) BIO_read_filename(certbio, link);
+  BIO_read_filename(certbio, link);
   if (! (cert = PEM_read_bio_X509(certbio, NULL, 0, NULL))) {
     printf("Error loading cert into memory\n");
   }
@@ -83,33 +82,24 @@ int get_pubkey(const char * pubkey_filestr, const char * cert_filestr) {
   EVP_PKEY *pkey = NULL;
   BIO              *certbio = NULL;
   X509                *cert = NULL;
-  int ret;
 
-  /* ---------------------------------------------------------- *
-   * These function calls initialize openssl for correct work.  *
-   * ---------------------------------------------------------- */
+  // These function calls initialize openssl for correct work.
   OpenSSL_add_all_algorithms();
   ERR_load_BIO_strings();
   ERR_load_crypto_strings();
 
-  /* ---------------------------------------------------------- *
-   * Create the Input BIO's.                             *
-   * ---------------------------------------------------------- */
+   // Create the Input BIO's.
   certbio = BIO_new(BIO_s_file());
 
-  /* ---------------------------------------------------------- *
-   * Load the certificate from file (PEM).                      *
-   * ---------------------------------------------------------- */
-  ret = (int) BIO_read_filename(certbio, cert_filestr);
+   // Load the certificate from file (PEM).
+  BIO_read_filename(certbio, cert_filestr);
     
   if (! (cert = PEM_read_bio_X509(certbio, NULL, 0, NULL))) {
     printf("Error loading cert into memory\n");
     return -1;
   }
 
-  /* ---------------------------------------------------------- *
-   * Extract the certificate's public key data.                 *
-   * ---------------------------------------------------------- */
+    // Extract the certificate's public key data.
   if ((pkey = X509_get_pubkey(cert)) == NULL)
     printf("Error getting public key from certificate\n");
 
@@ -202,7 +192,9 @@ int TLS_RSA_private_decrypt(unsigned char * enc_data, int data_len, const char *
 int is_needed_keyexchange(char * ciphersuite_to_use){
   /* return 1 if key_exchange has to be done, 0 otherwise */
     
-  if (atoi(ciphersuite_to_use) == atoi(TLS_RSA_WITH_SHA256) ){
+  if (atoi(ciphersuite_to_use) == atoi(TLS_RSA_WITH_SHA256) ||
+      atoi(ciphersuite_to_use) == atoi(TLS_RSA_WITH_SHA384)  || atoi(ciphersuite_to_use) == atoi(TLS_RSA_WITH_SHA224) ||
+      atoi(ciphersuite_to_use) == atoi(TLS_RSA_WITH_SHA512)){
     return 0;
   }
   else 
@@ -242,41 +234,69 @@ int P_Hash( const EVP_MD * evp_md, int round, char * secret, int len_secret, cha
 
 
 
-int compute_master_secret(unsigned char * master_secret, char * random_from_client, char * random_from_server, char * premaster_secret, char * label) {
+int compute_master_secret(unsigned char * master_secret, const EVP_MD * evp_md, char * random_from_client, char * random_from_server, char * premaster_secret, char * label) {
+    
+    int len_sha = 0;
+    if (evp_md == EVP_sha224()) {
+        len_sha = 28;
+    }
+    else if (evp_md == EVP_sha256()) {
+        len_sha = 32;
+    }
+    else if (evp_md == EVP_sha384()) {
+        len_sha = 38;
+    }
+    else{
+        len_sha = 64;
+    }
 
- // if( stiamo usando sha2) {...}
-
-	char * hash = calloc(32*3,sizeof(char));
+	char * hash = calloc(len_sha*3,sizeof(char));
 	char * seedsha = calloc(77, sizeof(char));
 	strncpy(seedsha, label,strlen(label)); strncat(seedsha, random_from_client,32); strncat(seedsha, random_from_server,32);
 
   // compute prs hmac
-	if (!P_Hash( EVP_sha256(), 3, premaster_secret, 48, seedsha, 77, hash, len_sha256)){
+	if (!P_Hash( evp_md, 3, premaster_secret, 48, seedsha, 77, hash, len_sha)){
         printf("Computation PRF failed\n");
     return 0;
   }
 
-  strncpy((char*) master_secret, hash, 48);
-
+    strncpy((char*) master_secret, hash, 48);
+    free(seedsha); free(hash);
 	return 1;
 }
 
 
-int compute_hash_log(FILE * log, unsigned char * master_secret, unsigned int len_master_secret, unsigned char * hash_server_log){
+int compute_hash_log(FILE * log, const EVP_MD * evp_md, unsigned char * master_secret, unsigned int len_master_secret, unsigned char * hash_server_log){
+    
+    int len_sha = 0;
+    if (evp_md == EVP_sha224()) {
+        len_sha = 28;
+    }
+    else if (evp_md == EVP_sha256()) {
+        len_sha = 32;
+    }
+    else if (evp_md == EVP_sha384()) {
+        len_sha = 38;
+    }
+    else{
+        len_sha = 64;
+    }
+    
+    int round = 1;
 
-  char *data = calloc(BUF_SIZE,sizeof(char));
-  char *hash = calloc(len_sha256,sizeof(char));
-  char ch;
-  int i = 0;
-  while( ( ch = fgetc(log) ) != EOF ){
-    data[i] = ch; i++;
-  }
+    char *data = calloc(BUF_SIZE,sizeof(char));
+    char *hash = calloc(len_sha,sizeof(char));
+    char ch;
+    int i = 0;
+    while( ( ch = fgetc(log) ) != EOF ){
+        data[i] = ch; i++;
+    }
 
-  P_Hash( EVP_sha256(), 1, (char*) master_secret, (int) strlen((const char *)master_secret), data, i-1, (char *) hash,  len_sha256);
+    P_Hash( EVP_sha256(), round, (char*) master_secret, (int) strlen((const char *)master_secret), data, i-1, (char *) hash,  len_sha);
 
-  stringToHex(hash, 12, (char *) hash_server_log);
+    stringToHex(hash, 12, (char *) hash_server_log); free(data);
 
-  return 1;
+    return 1;
 }
 
 
