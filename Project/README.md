@@ -9,7 +9,7 @@ Cryptographic Protocol.
 
 USAGE:
 
-1) Go by command line on the directory TLS_Budroni
+1) Go by command line on the directory Project
 
 2) Write "./build.sh" on command line to build everything
 
