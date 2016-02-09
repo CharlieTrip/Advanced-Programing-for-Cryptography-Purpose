@@ -1,42 +1,22 @@
-# Implementation Rules
----
 
-+ Messages are coded in the channel (a.k.a. the file) as 
+*** README ***
 
-		 
-		Content Type - Message Type \n
-		Message \n
-		
+**********************************************************
 
-+ Both server and client must have a personal file to save the log of all the messages exchanged.   
-This will be used for the final check of the protocol (hmac of all the messages).  
-So
-	+ Client has a *client.txt* locally
-	+ Server has a *server.txt* locally
-	+ Cli-Ser have a *channel.txt* for communication
-	+ Cli-Ser have two semaphores *ok_client.txt* and *ok_server.txt* for concurrency
+This is a script written in C by Alessandro Budroni for
+the project of the exam Advanced Programming for 
+Cryptographic Protocol.
 
-+ Both server and client has access to a CA certificate *ca.crt*.  
-Only server has a *certificate.crt* of his public key, signed by the CA.
+USAGE:
 
+1) Go by command line on the directory TLS_Budroni
 
----
+2) Write "./build.sh" on command line to build everything
 
-+ Use folder to separate the machines:
-	+ **Server** : will contain the servers file
-	+ **Client** : will contain the client file 
-	+ **Common** : will contain the common file to use
+3) Write "./run.sh -u" to see the usage of the scritp.
+   There you will see on command line all the instructions to use the script
 
----
-
-
-+ REMEMBER (ALE) fix the max length of the string
-
--> ricordarsi di aggiungere la gestione dei casi in cui i messaggi non vengano mandati correttamente
-
-
-
-
-
+4) Write "./see.sh -u" to see the instructions about 
+   how to read the logs of server and client
 
 
